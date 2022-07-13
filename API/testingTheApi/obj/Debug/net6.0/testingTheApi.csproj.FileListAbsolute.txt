@@ -1,0 +1,15 @@
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\bin\Debug\net6.0\testingTheApi.exe
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\bin\Debug\net6.0\testingTheApi.deps.json
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\bin\Debug\net6.0\testingTheApi.runtimeconfig.json
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\bin\Debug\net6.0\testingTheApi.dll
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\bin\Debug\net6.0\testingTheApi.pdb
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\obj\Debug\net6.0\testingTheApi.csproj.AssemblyReference.cache
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\obj\Debug\net6.0\testingTheApi.GeneratedMSBuildEditorConfig.editorconfig
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\obj\Debug\net6.0\testingTheApi.AssemblyInfoInputs.cache
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\obj\Debug\net6.0\testingTheApi.AssemblyInfo.cs
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\obj\Debug\net6.0\testingTheApi.csproj.CoreCompileInputs.cache
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\obj\Debug\net6.0\testingTheApi.dll
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\obj\Debug\net6.0\refint\testingTheApi.dll
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\obj\Debug\net6.0\testingTheApi.pdb
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\obj\Debug\net6.0\testingTheApi.genruntimeconfig.cache
+C:\Ionut\cc\LateralProject\LateralProject\API\testingTheApi\obj\Debug\net6.0\ref\testingTheApi.dll
