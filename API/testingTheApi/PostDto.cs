@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+//TODO: projects should start with an uppercase letter
 namespace testingTheApi
 {
+    //TODO: remove the Dto suffix
     internal class PostDto
     {
         public int Id { get; set; }

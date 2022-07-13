@@ -28,6 +28,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByid(int id)
         {
+            //TODO: do you search for comments or posts?
             var comment = await _context.Posts.FindAsync(id);
             return comment == null ? NotFound() : Ok(comment);
 

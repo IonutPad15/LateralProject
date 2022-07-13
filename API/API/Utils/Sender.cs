@@ -4,6 +4,7 @@ namespace API.Utils
 {
     public class Sender
     {
+        //TODO: methods should start with an uppercase letter
         //metoda de a trimite mail in C#
         public string sendEmail(string to)
         {
@@ -15,7 +16,7 @@ namespace API.Utils
                     string pass = "ihparbqnevrgcalm";//cheie de aplicatie furnizata de gmail
                     if (to.Equals("") || !to.Contains("@"))//verificare adresa de mail introdusa sa fie valida
                     {
-
+                        //TODO: use Enums for Error Codes
                         return "err1";
                     }
                     else
@@ -48,8 +49,9 @@ namespace API.Utils
             }
             catch (Exception ex)
             {
+                //TODO: use ILogger https://docs.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line
                 Console.WriteLine(ex.Message);
-                return "";
+                return ""; //TODO: string.Empty
             }
         }
     }
