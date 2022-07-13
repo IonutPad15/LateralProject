@@ -4,10 +4,14 @@ namespace API.Utils
 {
     public class Sender
     {
-        private readonly ILogger<Sender> logger;
+        private readonly ILogger<Sender>? logger;
         public Sender(ILogger<Sender> logger)
         {
             this.logger = logger;
+        }
+        public Sender()
+        {
+            
         }
 
         //TODO: methods should start with an uppercase letter

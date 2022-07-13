@@ -3,6 +3,8 @@ using System.Net.Http.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using testingTheApi;
+using System.Text.Json;
+using System.Text;
 
 HttpClient client = new();
 client.BaseAddress = new Uri("https://localhost:7083");
@@ -38,4 +40,64 @@ else
 {
     Console.WriteLine("No results");
 }
+
+
+//post json
+/*
+var newPost = new PostDto()
+{
+    Title = "altu",
+    User = "mgfgb",
+    Description = "FdfgfbgfjgfgkgfhskjdsjhgfgjkgdhkgdhgSFJDSFVODSFJFGVOJVFOIJ",
+    Created = DateTime.Now,
+    Updated = DateTime.Now
+
+};
+
+
+string urii = "https://localhost:7083" + "/api/post";
+response2 = await client.PostAsJsonAsync(urii, newPost);
+if(response2.IsSuccessStatusCode)
+{
+    response = await client.GetAsync("api/post");
+    if( response.IsSuccessStatusCode )
+    {
+        var posts = await response.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
+        foreach (var post in posts)
+        {
+            Console.WriteLine(post.ToString());
+        }
+    }
+}*/
+
+//post async
+
+var newPost = new PostDto()
+{
+    Title = "altu",
+    User = "mgfgb",
+    Description = "FdfgfbgfjgfgkgfhskjdsjhgfgjkgdhkgdhgSFJDSFVODSFJFGVOJVFOIJ",
+    Created = DateTime.Now,
+    Updated = DateTime.Now
+
+};
+string url = "https://localhost:7083" + "/api/post";
+var newPostSerialized = JsonSerializer.Serialize(newPost);
+var stringContent = new StringContent(newPostSerialized, Encoding.UTF8, "application/json");
+//poate fi si application/xml
+
+response2 = await client.PostAsync(url, stringContent);
+if (response2.IsSuccessStatusCode)
+{
+    response = await client.GetAsync("api/post");
+    if (response.IsSuccessStatusCode)
+    {
+        var posts = await response.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
+        foreach (var post in posts)
+        {
+            Console.WriteLine(post.ToString());
+        }
+    }
+}
+
 Console.ReadLine();
