@@ -15,5 +15,11 @@ namespace testingTheApi
         public string Description { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
+        override 
+        public string ToString()
+        {
+            string post = "User:" +User+"\n"+Title+"\n"+Description;
+            return post;
+        }
     }
 }
