@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;//TODO: remove unused namespaces
 using Microsoft.AspNetCore.Mvc;
 using API.Data;
 using API.Models;
@@ -52,6 +52,8 @@ namespace API.Controllers
             var matchesEmail = from users in _context.Users
                                where users.Email == User.Email
                                select users;
+
+            //TODO: you can adopt a Response<T> which contains the value and an enum for the error code
             if (matchesUser.Any())
             {
                 return StatusCode(StatusCodes.Status302Found);
@@ -65,6 +67,8 @@ namespace API.Controllers
             }
             //daca totul e bine, trimite un email cu codul de siguranta si salveaza userul in db
             //in MVC voi verifica codul de siguranta?
+
+            //TODO: no bussiness logic in the client. the logic there is just to render the api response
             Sender sender = new Sender();
             string verif = sender.sendEmail(User.Email);
             if(!verif.Equals("") && !verif.Equals("err1"))
@@ -92,6 +96,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
+            //TODO: variables start with a lowercase
             var UserToDelete = await _context.Users.FindAsync(id);
             if (UserToDelete == null) return NotFound();
 

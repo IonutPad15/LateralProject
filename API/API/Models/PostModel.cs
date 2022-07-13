@@ -5,6 +5,7 @@ namespace API.Models
     {
         [Key]
         public int Id { get; set; }
+        //TODO: is this user id, name, email, ...?
         [Required]
         public string User { get; set; }
         [Required]
