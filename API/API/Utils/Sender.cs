@@ -4,9 +4,19 @@ namespace API.Utils
 {
     public class Sender
     {
+        private readonly ILogger<Sender> logger;
+        public Sender(ILogger<Sender> logger)
+        {
+            this.logger = logger;
+        }
+
         //TODO: methods should start with an uppercase letter
         //metoda de a trimite mail in C#
-        public string sendEmail(string to)
+        public enum ResultCode
+        {
+            InvalidAdress, ValidAdress
+        }
+        public string SendEmail(string to)
         {
             try
             {
@@ -50,7 +60,7 @@ namespace API.Utils
             catch (Exception ex)
             {
                 //TODO: use ILogger https://docs.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line
-                Console.WriteLine(ex.Message);
+                logger.LogError(ex.Message);
                 return ""; //TODO: string.Empty
             }
         }

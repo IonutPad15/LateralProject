@@ -2,12 +2,13 @@
 
 namespace API.Models
 {
-    public class UserModel
+    public class User
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id{ get; set; }
         [Required]
         [MaxLength(30,ErrorMessage ="Username too long")]
+        [MinLength(3, ErrorMessage = "Username too short")]
         public string UserName { get; set; }
         [Required]
         public string Email { get; set; }

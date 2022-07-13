@@ -10,7 +10,7 @@ namespace testingTheApi
     //TODO: remove the Dto suffix
     internal class PostDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string User { get; set; }
         public string Title { get; set; }
 

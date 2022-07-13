@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿
 using Microsoft.AspNetCore.Mvc;
 using API.Data;
 using API.Models;
@@ -9,20 +9,20 @@ namespace API.Controllers
     [ApiController]
     public class PostController : ControllerBase
     {
-        private readonly TFMDbContext _context;
-        public PostController(TFMDbContext context)
+        private readonly SiteDbContext _context;
+        public PostController(SiteDbContext context)
         {
             _context = context;
         }
         [HttpGet]
-        public async Task<IEnumerable<PostModel>> Get()
+        public async Task<IEnumerable<Post>> Get()
         {
             return await _context.Posts.ToListAsync();
         }
 
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(PostModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Post), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByid(int id)
         {
@@ -33,8 +33,8 @@ namespace API.Controllers
 
 
         [HttpPost]
-        [ProducesResponseType(typeof(PostModel), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Create(PostModel post)
+        [ProducesResponseType(typeof(Post), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Create(Post post)
         {
             await _context.Posts.AddAsync(post);
             await _context.SaveChangesAsync();
@@ -45,7 +45,7 @@ namespace API.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(int id, PostModel post)
+        public async Task<IActionResult> Update(Guid id, Post post)
         {
             if (id != post.Id) return BadRequest();
             _context.Entry(post).State = EntityState.Modified;

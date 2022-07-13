@@ -12,8 +12,8 @@ namespace API.Controllers
     public class UserController : ControllerBase
     {
         
-        private readonly TFMDbContext _context;
-        public UserController(TFMDbContext context)
+        private readonly SiteDbContext _context;
+        public UserController(SiteDbContext context)
         {
             _context = context;
         }
@@ -21,14 +21,14 @@ namespace API.Controllers
         //inca nu sunt sigur daca am nevoie de lista de useri
         //dar o las momentat
         [HttpGet]
-        public async Task<IEnumerable<UserModel>> Get()
+        public async Task<IEnumerable<User>> Get()
         {
             return await _context.Users.ToListAsync();
         }
 
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(UserModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByid(int id)
         {
@@ -39,13 +39,13 @@ namespace API.Controllers
 
 
         [HttpPost]
-        [ProducesResponseType(typeof(UserModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> Create(UserModel User)
+        public async Task<IActionResult> Create(User User)
         {
             //cauta daca exista deja un utilizator cu acel username
-            var matchesUser = from users in _context.Users
+           /* var matchesUser = from users in _context.Users
                           where users.UserName == User.UserName
                           select users;
             //cauta daca exita deja un utilizator cu acel email
@@ -64,13 +64,13 @@ namespace API.Controllers
                 //am vrut sa fie diferite ca sa afiseze mesaje diferite utilizatorului
                 //"nume de utilizator existent" "exista deja un cont cu aceasta adresa"
                 return StatusCode(StatusCodes.Status409Conflict);
-            }
+            }*/
             //daca totul e bine, trimite un email cu codul de siguranta si salveaza userul in db
-            //in MVC voi verifica codul de siguranta?
+            
 
             //TODO: no bussiness logic in the client. the logic there is just to render the api response
             Sender sender = new Sender();
-            string verif = sender.sendEmail(User.Email);
+            string verif = sender.SendEmail(User.Email);
             if(!verif.Equals("") && !verif.Equals("err1"))
                 await _context.Users.AddAsync(User);
             await _context.SaveChangesAsync();
@@ -81,7 +81,7 @@ namespace API.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(int id, UserModel User)
+        public async Task<IActionResult> Update(Guid id, User User)
         {
             if (id != User.Id) return BadRequest();
             _context.Entry(User).State = EntityState.Modified;
@@ -97,10 +97,10 @@ namespace API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             //TODO: variables start with a lowercase
-            var UserToDelete = await _context.Users.FindAsync(id);
-            if (UserToDelete == null) return NotFound();
+            var userToDelete = await _context.Users.FindAsync(id);
+            if (userToDelete == null) return NotFound();
 
-            _context.Users.Remove(UserToDelete);
+            _context.Users.Remove(userToDelete);
             await _context.SaveChangesAsync();
 
             return NoContent();

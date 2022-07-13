@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 namespace API.Models
 {
-    public class PostModel
+    public class Post
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id{ get; set; }
         //TODO: is this user id, name, email, ...?
+        //the post id,
         [Required]
         public string User { get; set; }
         [Required]
@@ -16,10 +17,6 @@ namespace API.Models
         public string Description { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
-        public string ToString()
-        {
-            string Post = "User: " + User + "\n" + Title + "\n" + Description + "\n";
-            return Post;
-        }
+       
     }
 }

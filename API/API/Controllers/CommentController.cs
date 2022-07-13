@@ -11,44 +11,45 @@ namespace API.Controllers
     [ApiController]
     public class CommentController : ControllerBase
     {
-        private readonly TFMDbContext _context;
-        public CommentController(TFMDbContext context)
+        private readonly SiteDbContext _context;
+        public CommentController(SiteDbContext context)
         {
             _context = context;
         }
         [HttpGet]
-        public async Task<IEnumerable<CommentModel>> Get()
+        public async Task<IEnumerable<Comment>> Get()
         {
             return await _context.Comments.ToListAsync();
         }
 
-
+        /*
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(CommentModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByid(int id)
         {
             //TODO: do you search for comments or posts?
+            //I don't...
             var comment = await _context.Posts.FindAsync(id);
             return comment == null ? NotFound() : Ok(comment);
 
-        }
-
+        }*/
+        
 
         [HttpPost]
-        [ProducesResponseType(typeof(CommentModel), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Create(CommentModel comment)
+        [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Create(Comment comment)
         {
             await _context.Comments.AddAsync(comment);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetByid), new { id = comment.Id }, comment);
+            return CreatedAtAction(nameof(Get), new { id = comment.Id }, comment);
         }
 
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(int id, CommentModel comment)
+        public async Task<IActionResult> Update(Guid id, Comment comment)
         {
             if (id != comment.Id) return BadRequest();
             _context.Entry(comment).State = EntityState.Modified;

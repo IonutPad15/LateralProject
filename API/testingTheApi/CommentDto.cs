@@ -8,7 +8,7 @@ namespace testingTheApi
 {
     internal class CommentDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string UserPost { get; set; }
         public string PostTitle { get; set; }
         public string UserComment { get; set; }
