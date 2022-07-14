@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "fY8B51pktRKhRBz3QNb1WK5QDiBUz+rt2SIBm71dBGMc1DRprmJhXt3ANIbBzJ2kZek50lA4F6VQuV8vdVS1Uw==",
+  "dgSpecHash": "bt0LNRrYGJ4mdPsSMPzHMi0IMVdd7gmk6EQn7IMVx8kyXoXnZmeID+GDupyH+vJ+C8V6eJlpFPkYxZ3OXzUWWA==",
   "success": true,
   "projectFilePath": "C:\\Ionut\\cc\\LateralProject\\LateralProject\\API\\testingTheApi\\testingTheApi.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\lateral\\.nuget\\packages\\system.net.http.json\\6.0.0\\system.net.http.json.6.0.0.nupkg.sha512",
+    "C:\\Users\\lateral\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
+    "C:\\Users\\lateral\\.nuget\\packages\\system.text.encodings.web\\6.0.0\\system.text.encodings.web.6.0.0.nupkg.sha512",
+    "C:\\Users\\lateral\\.nuget\\packages\\system.text.json\\6.0.5\\system.text.json.6.0.5.nupkg.sha512"
+  ],
   "logs": []
 }

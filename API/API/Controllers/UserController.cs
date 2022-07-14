@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using API.Data;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 using API.Utils;
 
 namespace API.Controllers
@@ -11,20 +15,32 @@ namespace API.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        
+
         private readonly SiteDbContext _context;
-        public UserController(SiteDbContext context)
+        private readonly IConfiguration _configuration;
+        public UserController(SiteDbContext context, IConfiguration configuration)
         {
-            _context = context;
+            _context = context;            _configuration = configuration;
+
         }
 
         //inca nu sunt sigur daca am nevoie de lista de useri
         //dar o las momentat
         [HttpGet]
-        public async Task<IEnumerable<User>> Get()
+        public async Task<IEnumerable<UserInfo>> Get()
         {
-            return await _context.Users.ToListAsync();
+           
+            var usersinfo = from users in _context.Users
+                            select new UserInfo()
+                            {
+                                Id = users.Id,
+                                UserName = users.UserName,
+                                Email = users.Email
+                            };
+            List<UserInfo> userInfos = await usersinfo.ToListAsync<UserInfo>();
+            return userInfos;
         }
+
 
 
         [HttpGet("{id}")]
@@ -38,43 +54,55 @@ namespace API.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("create")]
         [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> Create(User User)
+        public async Task<ActionResult<UserToken>> Create([FromBody] User user)
         {
             //cauta daca exista deja un utilizator cu acel username
-           /* var matchesUser = from users in _context.Users
-                          where users.UserName == User.UserName
-                          select users;
-            //cauta daca exita deja un utilizator cu acel email
-            var matchesEmail = from users in _context.Users
-                               where users.Email == User.Email
-                               select users;
+            /* var matchesUser = from users in _context.Users
+                           where users.UserName == User.UserName
+                           select users;
+             //cauta daca exita deja un utilizator cu acel email
+             var matchesEmail = from users in _context.Users
+                                where users.Email == User.Email
+                                select users;
 
-            //TODO: you can adopt a Response<T> which contains the value and an enum for the error code
-            if (matchesUser.Any())
-            {
-                return StatusCode(StatusCodes.Status302Found);
-                //niste coduri care mi s-au parut ca s-ar potrivi
-            }
-            if (matchesEmail.Any())
-            {
-                //am vrut sa fie diferite ca sa afiseze mesaje diferite utilizatorului
-                //"nume de utilizator existent" "exista deja un cont cu aceasta adresa"
-                return StatusCode(StatusCodes.Status409Conflict);
-            }*/
+             //TODO: you can adopt a Response<T> which contains the value and an enum for the error code
+             if (matchesUser.Any())
+             {
+                 return StatusCode(StatusCodes.Status302Found);
+                 //niste coduri care mi s-au parut ca s-ar potrivi
+             }
+             if (matchesEmail.Any())
+             {
+                 //am vrut sa fie diferite ca sa afiseze mesaje diferite utilizatorului
+                 //"nume de utilizator existent" "exista deja un cont cu aceasta adresa"
+                 return StatusCode(StatusCodes.Status409Conflict);
+             }*/
             //daca totul e bine, trimite un email cu codul de siguranta si salveaza userul in db
-            
+
 
             //TODO: no bussiness logic in the client. the logic there is just to render the api response
+            
+
+           
             Sender sender = new Sender();
-            string verif = sender.SendEmail(User.Email);
-            if(!verif.Equals("") && !verif.Equals("err1"))
-                await _context.Users.AddAsync(User);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetByid), new { id = User.Id }, User);
+            string verif = sender.SendEmail(user.Email);
+            if (!verif.Equals("") && !verif.Equals("err1"))
+            {
+                var result = await _context.Users.AddAsync(user);
+                    
+                    await _context.SaveChangesAsync();
+                    return await BuildToken(user);
+                
+            }
+            else
+            {
+                return BadRequest("Eroare");
+            }
+           
         }
 
 
@@ -104,6 +132,56 @@ namespace API.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+        [HttpPost("login")]
+        public async Task<ActionResult<UserToken>> Login([FromBody] User user)
+        {
+
+            var foundUser = from users in _context.Users
+                            where (users.Email == user.Email
+                            || users.UserName == user.UserName)
+                            && users.Password == user.Password
+                            select users;
+            if(!foundUser.Any())
+            {
+                return BadRequest("Invalid login attempt");
+            }
+            else
+            {
+                return await BuildToken(user);
+            }
+
+            
+        }
+        private async Task<UserToken> BuildToken(User user)
+        {
+            var claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Email, user.Email),
+            };
+
+
+
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTkey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var expiration = DateTime.UtcNow.AddDays(1);
+
+            JwtSecurityToken token = new JwtSecurityToken(
+                issuer: null,
+                audience: null,
+                claims: claims,
+                expires: expiration,
+                signingCredentials: creds);
+
+            return new UserToken()
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                ExpirationDate = expiration
+            };
+
         }
     }
 }
