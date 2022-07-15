@@ -64,49 +64,67 @@ namespace API.Controllers
             return user == null ? NotFound() : Ok(userinfo);
 
         }
-        [HttpGet("{username}")]
-        [ProducesResponseType(typeof(UserInfo), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByUsername(  string username)
-        {
-            var user = await _context.Users.FindAsync(username);
-            var userinfo = new UserInfo()
-            {
-                UserName = user.UserName,
-                Email = user.Email,
-                Id = user.Id
-            };
-            return user == null ? NotFound() : Ok(userinfo);
-
-        }
+        
 
         private enum ResultCode
         {
             InvalidAdress, ValidAdress, Error
         }
-        [HttpPost("getcode")]
-        public async Task<ActionResult> GetCode( User user)
+        [HttpGet("getcode")]
+        public async Task<ActionResult> GetCode([FromQuery] string username,[FromQuery] string email)
         {
 
             //ResultCode code =
-            Sender sender = new Sender();
-            string verif = sender.SendEmail(user.Email);
-            if (!verif.Equals(ResultCode.Error.ToString()) && !verif.Equals(ResultCode.InvalidAdress.ToString()))
+            var usernameExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            if (usernameExists == null)
             {
-                RegisterCode code = new RegisterCode()
+                Sender sender = new Sender();
+                string verif = sender.SendEmail(email);
+                if (!verif.Equals(ResultCode.Error.ToString()) && !verif.Equals(ResultCode.InvalidAdress.ToString()))
                 {
-                    Code = verif,
-                    Created = DateTime.Now
-                };
-                userCodes.Add(user.UserName, code);
-                return Ok(user);
+                    RegisterCode code = new RegisterCode()
+                    {
+                        Code = verif,
+                        Created = DateTime.Now
+                    };
+                    userCodes.Add(username, code);
+                    return Ok(username);
+                }
+                else
+                {
+                    return BadRequest("Eroare");
+                }
             }
             else
             {
-                return BadRequest("Eroare");
+                return BadRequest("Already exists");
             }
 
         }
+        //[HttpPost("getcode")]
+        //public async Task<ActionResult> GetCode( User user)
+        //{
+
+        //    //ResultCode code =
+        //    Sender sender = new Sender();
+        //    string verif = sender.SendEmail(user.Email);
+        //    if (!verif.Equals(ResultCode.Error.ToString()) && !verif.Equals(ResultCode.InvalidAdress.ToString()))
+        //    {
+        //        RegisterCode code = new RegisterCode()
+        //        {
+        //            Code = verif,
+        //            Created = DateTime.Now
+        //        };
+        //        userCodes.Add(user.UserName, code);
+        //        return Ok(user);
+        //    }
+        //    else
+        //    {
+        //        return BadRequest("Eroare");
+        //    }
+
+        //}
+        ///Sendemail
         [HttpPost("create")]
         [ProducesResponseType(typeof(UserCode), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
@@ -147,10 +165,10 @@ namespace API.Controllers
 
         }
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPut("{id}")]
+        [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(Guid id, User user)
+        public async Task<IActionResult> Update(User user)
         {
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
@@ -159,7 +177,6 @@ namespace API.Controllers
                     return BadRequest("Not his post");
             }
             
-            if (id != user.Id) return BadRequest("Not good");
             _context.Entry(User).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 

@@ -14,6 +14,7 @@ namespace API.Models
         //I was thinking the comments table needs to know for each comment wich post it belongs to
         [Required]
         public string PostTitle { get; set; } 
+        ///Post id
         //userComment refers to the user that posted the comment, while the textComment refers to 
         //the comment itself
         //TODO: what's the difference between an UserComment and a TextComment?
