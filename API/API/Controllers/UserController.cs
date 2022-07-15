@@ -8,6 +8,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using API.Utils;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -46,12 +50,33 @@ namespace API.Controllers
 
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(UserInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByid(int id)
+        public async Task<IActionResult> GetByid(Guid id)
         {
-            var User = await _context.Users.FindAsync(id);
-            return User == null ? NotFound() : Ok(User);
+            var user = await _context.Users.FindAsync(id);
+            var userinfo = new UserInfo()
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                Id = user.Id
+            };
+            return user == null ? NotFound() : Ok(userinfo);
+
+        }
+        [HttpGet("{username}")]
+        [ProducesResponseType(typeof(UserInfo), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByUsername(  string username)
+        {
+            var user = await _context.Users.FindAsync(username);
+            var userinfo = new UserInfo()
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                Id = user.Id
+            };
+            return user == null ? NotFound() : Ok(userinfo);
 
         }
 
@@ -121,38 +146,20 @@ namespace API.Controllers
             }
 
         }
-        //[HttpPost("create")]
-        //[ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status302Found)]
-        //[ProducesResponseType(StatusCodes.Status409Conflict)]
-        //public async Task<ActionResult<UserToken>> Create([FromBody] User user)
-        //{
-
-        //        //ResultCode code =
-        //    Sender sender = new Sender();
-        //    string verif = sender.SendEmail(user.Email);
-        //    if (!verif.Equals(ResultCode.Error.ToString()) && !verif.Equals(ResultCode.InvalidAdress.ToString()))
-        //    {
-        //        var result = await _context.Users.AddAsync(user);
-
-        //            await _context.SaveChangesAsync();
-        //            return await BuildToken(user);
-
-        //    }
-        //    else
-        //    {
-        //        return BadRequest("Eroare");
-        //    }
-
-        //}
-
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(Guid id, User User)
+        public async Task<IActionResult> Update(Guid id, User user)
         {
-            if (id != User.Id) return BadRequest();
+            var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+            if (userclaim != null)
+            {
+                if (!userclaim.Value.Equals(user.UserName))
+                    return BadRequest("Not his post");
+            }
+            
+            if (id != user.Id) return BadRequest("Not good");
             _context.Entry(User).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
