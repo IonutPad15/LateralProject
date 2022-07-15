@@ -15,14 +15,14 @@ namespace API.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private Dictionary<string, RegisterCode> userCodes;
+        private static Dictionary<string, RegisterCode> userCodes= new Dictionary<string, RegisterCode>();
         private readonly SiteDbContext _context;
         private readonly IConfiguration _configuration;
         public UserController(SiteDbContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
-            userCodes = new Dictionary<string, RegisterCode>();
+            //userCodes = new Dictionary<string, RegisterCode>();
 
         }
 
@@ -60,7 +60,7 @@ namespace API.Controllers
             InvalidAdress, ValidAdress, Error
         }
         [HttpPost("getcode")]
-        public async Task<ActionResult> GetCode([FromHeader] User user)
+        public async Task<ActionResult> GetCode( User user)
         {
 
             //ResultCode code =
