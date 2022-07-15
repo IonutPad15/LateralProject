@@ -16,22 +16,25 @@ namespace API.Utils
 
         //TODO: methods should start with an uppercase letter
         //metoda de a trimite mail in C#
-        public enum ResultCode
+        private enum ResultCode
         {
-            InvalidAdress, ValidAdress
+            InvalidAdress, ValidAdress, Error
         }
         public string SendEmail(string to)
         {
+            ResultCode resultCode;
             try
             {
                 using (MailMessage mail = new MailMessage())
                 {
+                    
                     string from = "ioan.padurean@liceuludus.ro";
                     string pass = "ihparbqnevrgcalm";//cheie de aplicatie furnizata de gmail
                     if (to.Equals("") || !to.Contains("@"))//verificare adresa de mail introdusa sa fie valida
                     {
                         //TODO: use Enums for Error Codes
-                        return "err1";
+                        resultCode = ResultCode.InvalidAdress;
+                        return resultCode.ToString();
                     }
                     else
                     {
@@ -65,7 +68,8 @@ namespace API.Utils
             {
                 //TODO: use ILogger https://docs.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line
                 logger.LogError(ex.Message);
-                return ""; //TODO: string.Empty
+                resultCode = ResultCode.Error;
+                return resultCode.ToString(); //TODO: string.Empty
             }
         }
     }

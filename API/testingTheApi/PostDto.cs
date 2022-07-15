@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace testingTheApi
 {
     //TODO: remove the Dto suffix
-    internal class PostDto
+    public class PostDto
     {
         public Guid Id { get; set; }
         public string User { get; set; }

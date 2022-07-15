@@ -15,13 +15,14 @@ namespace API.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-
+        private Dictionary<string, RegisterCode> userCodes;
         private readonly SiteDbContext _context;
         private readonly IConfiguration _configuration;
         public UserController(SiteDbContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
+            userCodes = new Dictionary<string, RegisterCode>();
 
         }
 
@@ -54,57 +55,96 @@ namespace API.Controllers
 
         }
 
-
-        [HttpPost("create")]
-        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status302Found)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<UserToken>> Create([FromBody] User user)
+        private enum ResultCode
         {
-            //cauta daca exista deja un utilizator cu acel username
-            /* var matchesUser = from users in _context.Users
-                           where users.UserName == User.UserName
-                           select users;
-             //cauta daca exita deja un utilizator cu acel email
-             var matchesEmail = from users in _context.Users
-                                where users.Email == User.Email
-                                select users;
+            InvalidAdress, ValidAdress, Error
+        }
+        [HttpPost("getcode")]
+        public async Task<ActionResult> GetCode([FromHeader] User user)
+        {
 
-             //TODO: you can adopt a Response<T> which contains the value and an enum for the error code
-             if (matchesUser.Any())
-             {
-                 return StatusCode(StatusCodes.Status302Found);
-                 //niste coduri care mi s-au parut ca s-ar potrivi
-             }
-             if (matchesEmail.Any())
-             {
-                 //am vrut sa fie diferite ca sa afiseze mesaje diferite utilizatorului
-                 //"nume de utilizator existent" "exista deja un cont cu aceasta adresa"
-                 return StatusCode(StatusCodes.Status409Conflict);
-             }*/
-            //daca totul e bine, trimite un email cu codul de siguranta si salveaza userul in db
-
-
-            //TODO: no bussiness logic in the client. the logic there is just to render the api response
-            
-
-           
+            //ResultCode code =
             Sender sender = new Sender();
             string verif = sender.SendEmail(user.Email);
-            if (!verif.Equals("") && !verif.Equals("err1"))
+            if (!verif.Equals(ResultCode.Error.ToString()) && !verif.Equals(ResultCode.InvalidAdress.ToString()))
             {
-                var result = await _context.Users.AddAsync(user);
-                    
+                RegisterCode code = new RegisterCode()
+                {
+                    Code = verif,
+                    Created = DateTime.Now
+                };
+                userCodes.Add(user.UserName, code);
+                return Ok(user);
+            }
+            else
+            {
+                return BadRequest("Eroare");
+            }
+
+        }
+        [HttpPost("create")]
+        [ProducesResponseType(typeof(UserCode), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status302Found)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<UserToken>> Create([FromBody] UserCode userCode)
+        {
+
+            //ResultCode code =
+
+            if (userCodes.ContainsKey(userCode.UserName))
+            {
+                RegisterCode code = userCodes[userCode.UserName];
+                TimeSpan diff = DateTime.Now.Subtract(code.Created);
+                if(diff.Seconds>60)
+                {
+                    return BadRequest("Too late");
+                }
+                else
+                {
+                    User user = new User()
+                    {
+                        UserName = userCode.UserName,
+                        Email = userCode.Email,
+                        Password = userCode.Password,
+                        Id = userCode.Id
+                    };
+                    var result = await _context.Users.AddAsync(user);
+
                     await _context.SaveChangesAsync();
                     return await BuildToken(user);
+                }
                 
             }
             else
             {
                 return BadRequest("Eroare");
             }
-           
+
         }
+        //[HttpPost("create")]
+        //[ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status302Found)]
+        //[ProducesResponseType(StatusCodes.Status409Conflict)]
+        //public async Task<ActionResult<UserToken>> Create([FromBody] User user)
+        //{
+
+        //        //ResultCode code =
+        //    Sender sender = new Sender();
+        //    string verif = sender.SendEmail(user.Email);
+        //    if (!verif.Equals(ResultCode.Error.ToString()) && !verif.Equals(ResultCode.InvalidAdress.ToString()))
+        //    {
+        //        var result = await _context.Users.AddAsync(user);
+
+        //            await _context.SaveChangesAsync();
+        //            return await BuildToken(user);
+
+        //    }
+        //    else
+        //    {
+        //        return BadRequest("Eroare");
+        //    }
+
+        //}
 
 
         [HttpPut("{id}")]
