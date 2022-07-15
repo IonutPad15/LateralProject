@@ -20,7 +20,8 @@ namespace API.Controllers
         private readonly IConfiguration _configuration;
         public UserController(SiteDbContext context, IConfiguration configuration)
         {
-            _context = context;            _configuration = configuration;
+            _context = context;
+            _configuration = configuration;
 
         }
 

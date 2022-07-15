@@ -203,32 +203,42 @@ catch (Exception e)
     Console.WriteLine(e);
 }*/
 
+
+
+//update un post anume, doar daca e logat
+/*
+response3 = await client.GetAsync(url);
+response3.EnsureSuccessStatusCode();
+var posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
 var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 var httpResponseToken = await client.PostAsJsonAsync(urlAccounts +"/login", credentials);
 var responseToken = JsonSerializer.Deserialize<UserToken>(await
     httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
-
+Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
+foreach (var post in posts4)
+{
+    Console.WriteLine(post.ToString());
+    Console.WriteLine();
+}
+Console.WriteLine();Console.WriteLine();Console.WriteLine();
+PostDto post1;
+post1 = posts4.ToArray()[6];
+var personId = post1.Id;
+newPost.Description = "updated";
+newPost.Id = personId;
 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
     responseToken.Token);
 
-response = await client.PostAsJsonAsync(url, newPost);
-response.EnsureSuccessStatusCode();
-var content = await response.Content.ReadAsStringAsync();
-PostDto postare = JsonSerializer.Deserialize<PostDto>(content);
-Console.WriteLine(postare.ToString());
-Guid postId = Guid.Parse(content); 
-newPost.Description = "updated";
-using (var requestMessage = new HttpRequestMessage(HttpMethod.Put, url+$"{postId}"))
+
+
+response = await client.PutAsJsonAsync($"{url}/{personId}", newPost);
+Console.WriteLine(response.StatusCode);
+response3 = await client.GetAsync(url);
+posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
+foreach (var post in posts4)
 {
-    requestMessage.Headers.Add("username", credentials.UserName);
+    Console.WriteLine(post.ToString());
+}*/
 
-    var responseMessage = await client.SendAsync(requestMessage);
-    var posts = await responseMessage.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
-    foreach (var post in posts)
-    {
-        Console.WriteLine(post.ToString());
-    }
-
-}
 Console.WriteLine("Post created successfully");
 Console.ReadLine();

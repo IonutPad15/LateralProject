@@ -5,6 +5,8 @@ using API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -55,14 +57,23 @@ namespace API.Controllers
         }
 
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:Guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> Update(Guid id, Post post, [FromHeader] string username)
+        public async Task<IActionResult> Update(Guid id, Post post)
+        //public async Task<IActionResult> Update(Guid id, Post post, [FromHeader] UserToken userToken)
         {
-            if (id != post.Id) return BadRequest("Not good");
-            if(username != post.User) return BadRequest("Not his post");
+            
+            var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+            if(userclaim !=null)
+            {
+                if(!userclaim.Value.Equals(post.User)) 
+                    return BadRequest("Not his post");
+            }
+            if (id != post.Id) 
+                return BadRequest("Not good");
+            post.Updated = DateTime.UtcNow;
             _context.Entry(post).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
