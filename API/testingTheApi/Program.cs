@@ -171,9 +171,9 @@ catch (Exception e)
 }*/
 UserDto credentials = new UserDto()
 {
-    Email = "ssilviu_15@yahoo.com",
+    Email = "ionutpad15@gmail.com",
     Password = "stringst",
-    UserName = "Silviu"
+    UserName = "Ionut"
 };
 PostDto newPost = new PostDto()
 {

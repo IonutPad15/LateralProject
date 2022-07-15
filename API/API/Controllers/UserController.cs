@@ -89,13 +89,13 @@ namespace API.Controllers
         public async Task<ActionResult<UserToken>> Create([FromBody] UserCode userCode)
         {
 
-            //ResultCode code =
-
             if (userCodes.ContainsKey(userCode.UserName))
             {
                 RegisterCode code = userCodes[userCode.UserName];
-                TimeSpan diff = DateTime.Now.Subtract(code.Created);
-                if(diff.Seconds>60)
+                DateTime dateTime = DateTime.Now;
+                TimeSpan diff = dateTime.Subtract(code.Created);
+                
+                if(diff.TotalSeconds>60)
                 {
                     return BadRequest("Too late");
                 }
