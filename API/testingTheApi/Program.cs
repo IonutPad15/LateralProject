@@ -199,26 +199,26 @@ var responseToken = JsonSerializer.Deserialize<UserToken>(await
     httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
     responseToken.Token);
-credentials.Password = "altaparoola";
-credentials.UserName = "Ionut";
+credentials.Password = "altaparola";
+credentials.UserName = "Ionutescu";
 response = await client.PutAsJsonAsync(urlAccounts, credentials);
-if(response.IsSuccessStatusCode)
+if (response.IsSuccessStatusCode)
 {
     Console.WriteLine("reusit");
     response2 = await client.GetAsync("api/user");
-            if (response2.IsSuccessStatusCode)
-            {
-                var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
-                foreach (var user in users)
-                {
-                    Console.WriteLine(user.ToString());
-                }
-            }
+    if (response2.IsSuccessStatusCode)
+    {
+        var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
+        foreach (var user in users)
+        {
+            Console.WriteLine(user.ToString());
+        }
+    }
 }
 
 //</update password>
 
-
+//<delete account>
 
 //var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 //var httpResponseToken = await client.PostAsJsonAsync($"{urlAccounts}/login", credentials);

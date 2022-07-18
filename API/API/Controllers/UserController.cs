@@ -156,11 +156,13 @@ namespace API.Controllers
                 }
                 else if(code.Code.Equals(userCode.Code.Code))
                 {
+                    HashHelper hashHelper = new HashHelper();
+                    string hashedPassword = hashHelper.GetHash(userCode.Password);
                     User user = new User()
                     {
                         UserName = userCode.UserName,
                         Email = userCode.Email,
-                        Password = userCode.Password,
+                        Password = hashedPassword,
                         Id = userCode.Id
                     };
                     var result = await _context.Users.AddAsync(user);
@@ -187,13 +189,19 @@ namespace API.Controllers
         public async Task<IActionResult> Update(User user)
         {
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
-            var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName);
+            
             
             if (userclaim != null)
             {
                 if (!userclaim.Value.Equals(user.UserName))
                     return BadRequest("Not his account");
-                userToUpdate.Password = user.Password;
+                var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName);
+
+                HashHelper hashHelper = new HashHelper();
+                string hashedPassword = hashHelper.GetHash(user.Password);
+
+
+                userToUpdate.Password = hashedPassword;
                 _context.Entry(userToUpdate).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
@@ -270,11 +278,12 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserToken>> Login([FromBody] User user)
         {
-
+            HashHelper hashHelper = new HashHelper();
+            string hashedPassword = hashHelper.GetHash(user.Password);
             var foundUser = from users in _context.Users
                             where (users.Email == user.Email
                             || users.UserName == user.UserName)
-                            && users.Password == user.Password
+                            && users.Password == hashedPassword
                             select users;
             if(!foundUser.Any())
             {
