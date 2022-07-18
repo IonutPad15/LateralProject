@@ -70,24 +70,36 @@ namespace API.Controllers
         {
             InvalidAdress, ValidAdress, Error
         }
-        [HttpGet("getcode")]
-        public async Task<ActionResult> GetCode([FromQuery] string username,[FromQuery] string email)
+        private ResultCode SendCode(string username, string email, string message)
+        {
+            Sender sender = new Sender();
+            string verif = sender.SendEmail(email, message);
+            if (!verif.Equals(ResultCode.Error.ToString()) && !verif.Equals(ResultCode.InvalidAdress.ToString()))
+            {
+                RegisterCode code = new RegisterCode()
+                {
+                    Code = verif,
+                    Created = DateTime.Now
+                };
+                userCodes.Add(username, code);
+                return ResultCode.ValidAdress;
+            }
+            
+            if(verif.Equals(ResultCode.InvalidAdress.ToString()))   return ResultCode.InvalidAdress;
+            
+            return ResultCode.Error;
+        }
+        [HttpGet("registercode")]
+        public async Task<ActionResult> GetRegisterCode([FromQuery] string username,[FromQuery] string email)
         {
 
             //ResultCode code =
             var usernameExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
             if (usernameExists == null)
             {
-                Sender sender = new Sender();
-                string verif = sender.SendEmail(email);
-                if (!verif.Equals(ResultCode.Error.ToString()) && !verif.Equals(ResultCode.InvalidAdress.ToString()))
+                
+                if(SendCode(username, email, "You've made an account on TheForestMan! ")==ResultCode.ValidAdress)
                 {
-                    RegisterCode code = new RegisterCode()
-                    {
-                        Code = verif,
-                        Created = DateTime.Now
-                    };
-                    userCodes.Add(username, code);
                     return Ok(username);
                 }
                 else
@@ -142,7 +154,7 @@ namespace API.Controllers
                 {
                     return BadRequest("Too late");
                 }
-                else
+                else if(code.Code.Equals(userCode.Code.Code))
                 {
                     User user = new User()
                     {
@@ -155,6 +167,10 @@ namespace API.Controllers
 
                     await _context.SaveChangesAsync();
                     return await BuildToken(user);
+                }
+                else
+                {
+                    return BadRequest("Code not valid");
                 }
                 
             }
@@ -171,33 +187,86 @@ namespace API.Controllers
         public async Task<IActionResult> Update(User user)
         {
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+            var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName);
+            
             if (userclaim != null)
             {
                 if (!userclaim.Value.Equals(user.UserName))
-                    return BadRequest("Not his post");
-            }
-            
-            _context.Entry(User).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+                    return BadRequest("Not his account");
+                userToUpdate.Password = user.Password;
+                _context.Entry(userToUpdate).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
 
+                return Ok(user);
+            }
+            //var userToUpdate = user;
             return NoContent();
         }
 
-
-        [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("deletecode")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> GetDeleteCode([FromQuery] string username, [FromQuery] string email)
         {
-            //TODO: variables start with a lowercase
-            var userToDelete = await _context.Users.FindAsync(id);
-            if (userToDelete == null) return NotFound();
-
-            _context.Users.Remove(userToDelete);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            var usernameExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            if (usernameExists != null)
+            {
+               
+                if (SendCode(username, email, "You want to delete your account! ") == ResultCode.ValidAdress)
+                {
+                    return Ok(username);
+                }
+                else
+                {
+                    return BadRequest("Eroare");
+                }
+            }
+            else
+            {
+                return BadRequest("User not found");
+            }
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpDelete("delete")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Delete([FromQuery] string username, [FromQuery]string codeFromUser)
+        {
+            var userToDelete = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            if (userToDelete == null) return NotFound();
+            //TODO: variables start with a lowercase
+            var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+            if (userclaim != null)
+            {
+                if (!userclaim.Value.Equals(userToDelete.UserName))
+                    return BadRequest("Not his account");
+                if (userCodes.ContainsKey(username))
+                {
+                    RegisterCode code = userCodes[username];
+                    DateTime dateTime = DateTime.Now;
+                    TimeSpan diff = dateTime.Subtract(code.Created);
+
+                    if (diff.TotalSeconds > 60)
+                    {
+                        return BadRequest("Too late");
+                    }
+                    else if(code.Code.Equals(codeFromUser))
+                    {
+                        _context.Users.Remove(userToDelete);
+                        await _context.SaveChangesAsync();
+
+                        return NoContent();
+                    }
+                    else
+                    {
+                        return BadRequest("Code not valid");
+                    }
+                }
+            }
+            return BadRequest("Eroare");
+        }
+        
         [HttpPost("login")]
         public async Task<ActionResult<UserToken>> Login([FromBody] User user)
         {

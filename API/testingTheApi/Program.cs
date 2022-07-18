@@ -173,9 +173,10 @@ catch (Exception e)
 UserDto credentials = new UserDto()
 {
     //Email = "ioan@ererf.comm",
-    Email = "ionutpad15@gmail.com",
-    Password = "stringst",
-    UserName = "Ionut"
+    Email = "isdark23@yahoo.com",
+    Password = "altaparoola",
+    UserName = "Ionutescu"
+    //UserName = "Ionel"
 };
 PostDto newPost = new PostDto()
 {
@@ -186,78 +187,169 @@ PostDto newPost = new PostDto()
     Updated = DateTime.Now
 };
 Console.WriteLine(newPost.ToString());
+
 string url = "https://localhost:7083" + "/api/post";
 string urlAccounts = "https://localhost:7083" + "/api/user";
 
-//var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+//<update password>
 
+var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+var httpResponseToken = await client.PostAsJsonAsync($"{urlAccounts}/login", credentials);
+var responseToken = JsonSerializer.Deserialize<UserToken>(await
+    httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
+client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+    responseToken.Token);
+credentials.Password = "altaparoola";
+credentials.UserName = "Ionut";
+response = await client.PutAsJsonAsync(urlAccounts, credentials);
+if(response.IsSuccessStatusCode)
+{
+    Console.WriteLine("reusit");
+    response2 = await client.GetAsync("api/user");
+            if (response2.IsSuccessStatusCode)
+            {
+                var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
+                foreach (var user in users)
+                {
+                    Console.WriteLine(user.ToString());
+                }
+            }
+}
+
+//</update password>
+
+
+
+//var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 //var httpResponseToken = await client.PostAsJsonAsync($"{urlAccounts}/login", credentials);
 //var responseToken = JsonSerializer.Deserialize<UserToken>(await
 //    httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
 //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
 //    responseToken.Token);
 
+//try
+//{
+//    var respuesta = await client.GetAsync($"{urlAccounts}/deletecode?username={credentials.UserName}&&email={credentials.Email}");
+//    if (respuesta.StatusCode == HttpStatusCode.InternalServerError)
+//    {
+//        respuesta.EnsureSuccessStatusCode();
+//    }
+//    if (respuesta.IsSuccessStatusCode)
+//    {
+//        Console.WriteLine("merge?");
+//        Console.WriteLine("Enter the code:");
+//        string coderead = Console.ReadLine();
+//        RegisterCode code = new RegisterCode()
+//        {
+//            Code = coderead,
+//            Created = DateTime.Now
+//        };
+//        UserCodeDto userCode = new UserCodeDto()
+//        {
+//            Email = credentials.Email,
+//            Password = credentials.Password,
+//            UserName = credentials.UserName,
+//            Code = code
+//        };
+//        var respueste = await client.DeleteAsync($"{urlAccounts}/delete?username={userCode.UserName}&&codeFromUser={userCode.Code.Code}");
+//        if (respueste.StatusCode == HttpStatusCode.InternalServerError)
+//        {
+//            respueste.EnsureSuccessStatusCode();
+//        }
+//        Console.WriteLine("Deleted, soarele lui");
+//        response2 = await client.GetAsync("api/user");
+//        if (response2.IsSuccessStatusCode)
+//        {
+//            var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
+//            foreach (var user in users)
+//            {
+//                Console.WriteLine(user.ToString());
+//            }
+//        }
+//    }
+
+
+//}
+//catch (Exception e)
+//{
+//    Console.WriteLine(e);
+//}
+
+//</delete account>
+
+
+//<login >
+
+
+//var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+//var httpResponseToken = await client.PostAsJsonAsync($"{urlAccounts}/login", credentials);
+//var responseToken = JsonSerializer.Deserialize<UserToken>(await
+//    httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
+//client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+//    responseToken.Token);
+
+//</login>
 
 
 //UserInfo userinfo = await response.Content.ReadFromJsonAsync<UserInfo>();
 //Console.WriteLine(userinfo.ToString());
 //($"{urlAccounts}/{credentials.UserName}");
 //response = await client.DeleteAsync($"{urlAccounts}/{personId}")
-//////create user
 
-try
-{
 
-    var query = HttpUtility.ParseQueryString(string.Empty);
-    query["foo"] = "bar<>&-baz";
-    query["bar"] = "bazinga";
-    string queryString = query.ToString();
-    
-    var respuesta = await client.GetAsync($"{urlAccounts}/getcode?username={credentials.UserName}&&email={credentials.Email}");
-    if (respuesta.StatusCode == HttpStatusCode.InternalServerError)
-    {
-        respuesta.EnsureSuccessStatusCode();
-    }
-    if (respuesta.IsSuccessStatusCode)
-    {
-        Console.WriteLine("merge?");
 
-    }
-    Console.WriteLine("Enter the code:");
-    string coderead = Console.ReadLine();
-    RegisterCode code = new RegisterCode()
-    {
-        Code = coderead,
-        Created = DateTime.Now
-    };
-    UserCodeDto userCode = new UserCodeDto()
-    {
-        Email = credentials.Email,
-        Password = credentials.Password,
-        UserName = credentials.UserName,
-        Code = code
-    };
-    var respueste = await client.PostAsJsonAsync($"{urlAccounts}/create", userCode);
-    if (respueste.StatusCode == HttpStatusCode.InternalServerError)
-    {
-        respueste.EnsureSuccessStatusCode();
-    }
-    Console.WriteLine("Created, soarele lui");
-    response2 = await client.GetAsync("api/user");
-    if (response2.IsSuccessStatusCode)
-    {
-        var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
-        foreach (var user in users)
-        {
-            Console.WriteLine(user.ToString());
-        }
-    }
 
-}
-catch (Exception e)
-{
-    Console.WriteLine(e);
-}
+//////<create user>
+
+//try
+//{
+//    var respuesta = await client.GetAsync($"{urlAccounts}/registercode?username={credentials.UserName}&&email={credentials.Email}");
+//    if (respuesta.StatusCode == HttpStatusCode.InternalServerError)
+//    {
+//        respuesta.EnsureSuccessStatusCode();
+//    }
+//    if (respuesta.IsSuccessStatusCode)
+//    {
+//        Console.WriteLine("merge?");
+//        Console.WriteLine("Enter the code:");
+//        string coderead = Console.ReadLine();
+//        RegisterCode code = new RegisterCode()
+//        {
+//            Code = coderead,
+//            Created = DateTime.Now
+//        };
+//        UserCodeDto userCode = new UserCodeDto()
+//        {
+//            Email = credentials.Email,
+//            Password = credentials.Password,
+//            UserName = credentials.UserName,
+//            Code = code
+//        };
+//        var respueste = await client.PostAsJsonAsync($"{urlAccounts}/create", userCode);
+//        if (respueste.StatusCode == HttpStatusCode.InternalServerError)
+//        {
+//            respueste.EnsureSuccessStatusCode();
+//        }
+//        Console.WriteLine("Created, soarele lui");
+//        response2 = await client.GetAsync("api/user");
+//        if (response2.IsSuccessStatusCode)
+//        {
+//            var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
+//            foreach (var user in users)
+//            {
+//                Console.WriteLine(user.ToString());
+//            }
+//        }
+
+//    }
+
+//}
+//catch (Exception e)
+//{
+//    Console.WriteLine(e);
+//}
+
+//</create user>
 /*
 try
 {
@@ -277,7 +369,7 @@ catch (Exception e)
 
 
 
-//update un post anume, doar daca e logat
+//<update un post anume, doar daca e logat>
 /*
 response3 = await client.GetAsync(url);
 response3.EnsureSuccessStatusCode();
@@ -310,7 +402,9 @@ posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
 foreach (var post in posts4)
 {
     Console.WriteLine(post.ToString());
-}*/
+}
+//</update un post anume, doar daca e logat>
+ */
 
 Console.WriteLine("Post created successfully");
 Console.ReadLine();

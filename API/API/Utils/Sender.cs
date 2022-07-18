@@ -11,7 +11,7 @@ namespace API.Utils
         }
         public Sender()
         {
-            
+
         }
 
         //TODO: methods should start with an uppercase letter
@@ -20,14 +20,14 @@ namespace API.Utils
         {
             InvalidAdress, ValidAdress, Error
         }
-        public string SendEmail(string to)
+        public string SendEmail(string to, string message)
         {
             ResultCode resultCode;
             try
             {
                 using (MailMessage mail = new MailMessage())
                 {
-                    
+
                     string from = "ioan.padurean@liceuludus.ro";
                     string pass = "ihparbqnevrgcalm";//cheie de aplicatie furnizata de gmail
                     if (to.Equals("") || !to.Contains("@"))//verificare adresa de mail introdusa sa fie valida
@@ -45,8 +45,8 @@ namespace API.Utils
                         nr3 = random.Next(9);
                         nr4 = random.Next(9);
                         string verif = "" + nr1 + nr2 + nr3 + nr4;
-                        string body = "<p>V-ati facut cont pe TheForestMan!</p> ";
-                        body += "<p> Codul de siguranta:</p>";
+                        string body = "<p>" + message + "</p>";
+                        body += "<p> Safety code</p>";
                         body += "<p> <h1> " + verif + " </h1> </p>";
                         mail.From = new MailAddress(from);
                         mail.To.Add(to);
