@@ -16,5 +16,8 @@ namespace API.Models
         [MaxLength(256,ErrorMessage ="Password too long")]
         [MinLength(8,ErrorMessage ="Password too short")]
         public string Password { get; set; }    
+        
+
+        public List<Post>? Posts { get; set; }
     }
 }

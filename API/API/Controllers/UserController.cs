@@ -50,18 +50,34 @@ namespace API.Controllers
 
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(UserInfo), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(UserPostsInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByid(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
+            //var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.User).Single(x => x.Id == id);
+            var usertester = _context.Users.Include(x => x.Posts).Single(x=> x.Id == id);
+            UserPostsInfo userpostinfo = new UserPostsInfo()
+            {
+                UserName = usertester.UserName,
+                Email = usertester.Email,
+                Id  = usertester.Id,
+                Posts = usertester.Posts
+            };
+            
+            Console.WriteLine("\n\n\n\n");
+            foreach (var post in usertester.Posts)
+            {
+                Console.WriteLine($"{usertester.UserName} has the post {post.Title} with body:{post.Description}");
+            }
+            Console.WriteLine("\n\n\n\n");
             var userinfo = new UserInfo()
             {
                 UserName = user.UserName,
                 Email = user.Email,
                 Id = user.Id
             };
-            return user == null ? NotFound() : Ok(userinfo);
+            return user == null ? NotFound() : Ok(userpostinfo);
 
         }
         

@@ -8,32 +8,35 @@ using System.Text;
 using System.Net;
 using System.Web;
 
+Console.WriteLine(DateTime.Now);
 HttpClient client = new();
 client.BaseAddress = new Uri("https://localhost:7083");
 client.DefaultRequestHeaders.Accept.Clear();
 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-HttpResponseMessage response = await client.GetAsync("api/post");
+HttpResponseMessage response = new HttpResponseMessage();
+//HttpResponseMessage response = await client.GetAsync("api/post");
 HttpResponseMessage response2 = await client.GetAsync("api/user");
 HttpResponseMessage response3 = await client.GetAsync("api/comment");
 //response = await client.
-response.EnsureSuccessStatusCode();
+//response.EnsureSuccessStatusCode();
 response2.EnsureSuccessStatusCode();
 response3.EnsureSuccessStatusCode();
-if (response.IsSuccessStatusCode && response2.IsSuccessStatusCode && response3.IsSuccessStatusCode)
+if (
+    //response.IsSuccessStatusCode && 
+    response2.IsSuccessStatusCode && response3.IsSuccessStatusCode)
 {
-    var posts = await response.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
-    foreach (var post in posts)
-    {
-        Console.WriteLine(post.ToString());
-    }
+    //var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
+    //foreach (var post in posts)
+    //{
+    //    Console.WriteLine(post.ToString());
+    //}
     Console.WriteLine();
     var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
     foreach (var user in users)
     {
         Console.WriteLine(user.ToString());
     }
-    var comments = await response3.Content.ReadFromJsonAsync<IEnumerable<CommentDto>>();
+    var comments = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
     foreach (var comment in comments)
     {
         Console.WriteLine(comment.ToString());
@@ -48,7 +51,7 @@ else
 
 //post json
 /*
-var newPost = new PostDto()
+var newPost = new Post()
 {
     Title = "altu",
     User = "mgfgb",
@@ -66,7 +69,7 @@ if(response2.IsSuccessStatusCode)
     response = await client.GetAsync("api/post");
     if( response.IsSuccessStatusCode )
     {
-        var posts = await response.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
+        var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
         foreach (var post in posts)
         {
             Console.WriteLine(post.ToString());
@@ -76,7 +79,7 @@ if(response2.IsSuccessStatusCode)
 
 //post async
 /*
-var newPost = new PostDto()
+var newPost = new Post()
 {
     
     User = "mgfgb",
@@ -96,7 +99,7 @@ if (response2.IsSuccessStatusCode)
     response = await client.GetAsync("api/post");
     if (response.IsSuccessStatusCode)
     {
-        var posts = await response.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
+        var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
         foreach (var post in posts)
         {
             Console.WriteLine(post.ToString());
@@ -105,14 +108,14 @@ if (response2.IsSuccessStatusCode)
    
 }*/
 
-/*PostDto newPost = new PostDto();
+/*Post newPost = new Post();
 response2 = await client.PostAsJsonAsync(url, newPost);
 if (response2.IsSuccessStatusCode)
 {
     response = await client.GetAsync("api/post");
     if (response.IsSuccessStatusCode)
     {
-        var posts = await response.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
+        var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
         foreach (var post in posts)
         {
             Console.WriteLine(post.ToString());
@@ -143,7 +146,7 @@ using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, url))
 {
     requestMessage.Headers.Add("postAmount", "2");
     var responseMessage = await client.SendAsync(requestMessage);
-    var posts = await  responseMessage.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
+    var posts = await  responseMessage.Content.ReadFromJsonAsync<IEnumerable<Post>>();
     foreach (var post in posts)
     {
         Console.WriteLine(post.ToString());
@@ -170,28 +173,41 @@ catch (Exception e)
 {
     Console.WriteLine(e);
 }*/
-UserDto credentials = new UserDto()
+User credentials = new User()
 {
     //Email = "ioan@ererf.comm",
     Email = "isdark23@yahoo.com",
-    Password = "altaparoola",
+    Password = "altaparola",
     UserName = "Ionutescu"
     //UserName = "Ionel"
 };
-PostDto newPost = new PostDto()
-{
-    Description = "eram undeva pe mail",
-    Title = "Postare 12",
-    User = "Ionel",
-    Created = DateTime.Now,
-    Updated = DateTime.Now
-};
-Console.WriteLine(newPost.ToString());
+
+
 
 string url = "https://localhost:7083" + "/api/post";
 string urlAccounts = "https://localhost:7083" + "/api/user";
 
-//<update password>
+//<create new post>
+
+response2 = await client.GetAsync("api/user");
+var users2 = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
+var user2 = users2.FirstOrDefault();
+User user1 = new User()
+{
+    Id = user2.Id,
+    UserName = credentials.UserName,
+    Password = credentials.Password,
+    Email = credentials.Email
+};
+Post newPost = new Post()
+{
+    Description = "Body2",
+    Title = "Postare noua2",
+    UserId = user2.Id,
+    NumberOfComments = 1,
+    Created = DateTime.Now,
+    Updated = DateTime.Now
+};
 
 var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 var httpResponseToken = await client.PostAsJsonAsync($"{urlAccounts}/login", credentials);
@@ -199,22 +215,51 @@ var responseToken = JsonSerializer.Deserialize<UserToken>(await
     httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
     responseToken.Token);
-credentials.Password = "altaparola";
-credentials.UserName = "Ionutescu";
-response = await client.PutAsJsonAsync(urlAccounts, credentials);
+response = await client.GetAsync($"{urlAccounts}/{user2.Id}");
 if (response.IsSuccessStatusCode)
 {
-    Console.WriteLine("reusit");
-    response2 = await client.GetAsync("api/user");
-    if (response2.IsSuccessStatusCode)
-    {
-        var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
-        foreach (var user in users)
-        {
-            Console.WriteLine(user.ToString());
-        }
-    }
+    var user3 = await response.Content.ReadFromJsonAsync<UserPostInfo>();
+    Console.WriteLine(user3.ToString());
 }
+//response2 = await client.PostAsJsonAsync(url, newPost);
+//if (response2.IsSuccessStatusCode)
+//{
+//    response = await client.GetAsync("api/post");
+//    if (response.IsSuccessStatusCode)
+//    {
+//        var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
+//        //foreach (var post in posts)
+//        //{
+//        //    Console.WriteLine(post.ToString());
+//        //}
+//    }
+//}
+//</create new post>
+
+//<update password>
+
+//var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+//var httpResponseToken = await client.PostAsJsonAsync($"{urlAccounts}/login", credentials);
+//var responseToken = JsonSerializer.Deserialize<UserToken>(await
+//    httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
+//client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+//    responseToken.Token);
+//credentials.Password = "altaparola";
+//credentials.UserName = "Ionutescu";
+//response = await client.PutAsJsonAsync(urlAccounts, credentials);
+//if (response.IsSuccessStatusCode)
+//{
+//    Console.WriteLine("reusit");
+//    response2 = await client.GetAsync("api/user");
+//    if (response2.IsSuccessStatusCode)
+//    {
+//        var users = await response2.Content.ReadFromJsonAsync<IEnumerable<User>>();
+//        foreach (var user in users)
+//        {
+//            Console.WriteLine(user.ToString());
+//        }
+//    }
+//}
 
 //</update password>
 
@@ -244,7 +289,7 @@ if (response.IsSuccessStatusCode)
 //            Code = coderead,
 //            Created = DateTime.Now
 //        };
-//        UserCodeDto userCode = new UserCodeDto()
+//        UserCode userCode = new UserCode()
 //        {
 //            Email = credentials.Email,
 //            Password = credentials.Password,
@@ -260,7 +305,7 @@ if (response.IsSuccessStatusCode)
 //        response2 = await client.GetAsync("api/user");
 //        if (response2.IsSuccessStatusCode)
 //        {
-//            var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
+//            var users = await response2.Content.ReadFromJsonAsync<IEnumerable<User>>();
 //            foreach (var user in users)
 //            {
 //                Console.WriteLine(user.ToString());
@@ -318,7 +363,7 @@ if (response.IsSuccessStatusCode)
 //            Code = coderead,
 //            Created = DateTime.Now
 //        };
-//        UserCodeDto userCode = new UserCodeDto()
+//        UserCode userCode = new UserCode()
 //        {
 //            Email = credentials.Email,
 //            Password = credentials.Password,
@@ -334,7 +379,7 @@ if (response.IsSuccessStatusCode)
 //        response2 = await client.GetAsync("api/user");
 //        if (response2.IsSuccessStatusCode)
 //        {
-//            var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
+//            var users = await response2.Content.ReadFromJsonAsync<IEnumerable<User>>();
 //            foreach (var user in users)
 //            {
 //                Console.WriteLine(user.ToString());
@@ -348,6 +393,7 @@ if (response.IsSuccessStatusCode)
 //{
 //    Console.WriteLine(e);
 //}
+
 
 //</create user>
 /*
@@ -373,7 +419,7 @@ catch (Exception e)
 /*
 response3 = await client.GetAsync(url);
 response3.EnsureSuccessStatusCode();
-var posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
+var posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<Post>>();
 var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 var httpResponseToken = await client.PostAsJsonAsync(urlAccounts +"/login", credentials);
 var responseToken = JsonSerializer.Deserialize<UserToken>(await
@@ -385,7 +431,7 @@ foreach (var post in posts4)
     Console.WriteLine();
 }
 Console.WriteLine();Console.WriteLine();Console.WriteLine();
-PostDto post1;
+Post post1;
 post1 = posts4.ToArray()[6];
 var personId = post1.Id;
 newPost.Description = "updated";
@@ -398,7 +444,7 @@ client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bear
 response = await client.PutAsJsonAsync($"{url}/{personId}", newPost);
 Console.WriteLine(response.StatusCode);
 response3 = await client.GetAsync(url);
-posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<PostDto>>();
+posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<Post>>();
 foreach (var post in posts4)
 {
     Console.WriteLine(post.ToString());

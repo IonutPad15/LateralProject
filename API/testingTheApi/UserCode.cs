@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace testingTheApi
 {
-    public class UserCodeDto
+    public class UserCode
     {
        
             public Guid Id { get; set; }

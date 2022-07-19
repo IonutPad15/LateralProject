@@ -8,19 +8,23 @@ using System.Threading.Tasks;
 namespace testingTheApi
 {
     //TODO: remove the Dto suffix
-    public class PostDto
+    public class Post
     {
         public Guid Id { get; set; }
-        public string User { get; set; }
+        
         public string Title { get; set; }
 
         public string Description { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
+
+        public Guid UserId { get; set; }
+        public User User { get; set; }
+        public int NumberOfComments { get; set; }
         override 
         public string ToString()
         {
-            string post = "User:" +User+"\n"+Title+"\n"+Description;
+            string post = "User:" +User.UserName+"\n"+Title+"\n"+Description;
             return post;
         }
     }
