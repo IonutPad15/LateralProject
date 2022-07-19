@@ -1,27 +1,21 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace API.Models
 {
     //TODO: you don't need the Model suffix. you're already in the models namespace
     public class Comment
     {
         [Key]
-        public Guid Id { get; set; } //TODO: use Guid if possible
+        public Guid Id { get; set; } 
         [Required]
-        //UserPost refers to the user that posted
-        public string UserPost { get; set; }
-
-        //TODO: can a user have multiple posts with the same title?
-        //I was thinking the comments table needs to know for each comment wich post it belongs to
+        public string Author { get; set; }
+        [ForeignKey("User")]
+        public Guid? UserId { get; set; }
+        [ForeignKey("Post")]
+        public Guid? PostId { get; set; }
         [Required]
-        public string PostTitle { get; set; } 
-        ///Post id
-        //userComment refers to the user that posted the comment, while the textComment refers to 
-        //the comment itself
-        //TODO: what's the difference between an UserComment and a TextComment?
-        [Required]
-        public string UserComment { get; set; }
-        [Required]
-        public string TextComment { get; set; }
+        public string CommentBody { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
 

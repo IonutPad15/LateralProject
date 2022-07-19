@@ -49,7 +49,8 @@ namespace API.Data.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Updated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NumberOfComments = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

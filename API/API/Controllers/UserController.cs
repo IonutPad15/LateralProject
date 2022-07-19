@@ -49,10 +49,10 @@ namespace API.Controllers
 
 
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}/posts")]
         [ProducesResponseType(typeof(UserPostsInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetByid(Guid id)
+        public async Task<IActionResult> GetPostsByid(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
             //var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.User).Single(x => x.Id == id);

@@ -24,7 +24,7 @@ namespace API.Models
         //navigation properties
         [ForeignKey("User")]
         public Guid? UserId { get; set; }
-        
-        public int NumberOfComments { get; set; }
+        public string Author { get; set; }
+        public List<Comment> Comments { get; set; }
     }
 }

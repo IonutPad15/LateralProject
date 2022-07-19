@@ -19,12 +19,12 @@ namespace testingTheApi
         public DateTime Updated { get; set; }
 
         public Guid UserId { get; set; }
-        public User User { get; set; }
-        public int NumberOfComments { get; set; }
+        public string Author { get; set; }
+        public List<Comment> Comments { get; set; }
         override 
         public string ToString()
         {
-            string post = "User:" +User.UserName+"\n"+Title+"\n"+Description;
+            string post = "User:" +Author+"\n"+Title+"\n"+Description;
             return post;
         }
     }

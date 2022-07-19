@@ -84,9 +84,18 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Delete(int id)
         {
+
             var postToDelete = await _context.Posts.FindAsync(id);
+            var user = await _context.Users.FindAsync(postToDelete.UserId);
+            var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+            if (userclaim != null)
+            {
+                if (!userclaim.Value.Equals(user.UserName))
+                    return BadRequest("Not his post");
+            }
             if (postToDelete == null) return NotFound();
 
             _context.Posts.Remove(postToDelete);
