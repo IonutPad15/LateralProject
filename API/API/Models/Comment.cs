@@ -8,8 +8,7 @@ namespace API.Models
     {
         [Key]
         public Guid Id { get; set; } 
-        [Required]
-        public string Author { get; set; }
+        public string? Author { get; set; }
         [ForeignKey("User")]
         public Guid? UserId { get; set; }
         [ForeignKey("Post")]

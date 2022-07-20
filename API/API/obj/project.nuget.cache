@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "dgSpecHash": "Qd73PHaRLv3PbwVOe8xTFB12+Pk76Fu4AWyNaLqRnbJDpvjhOs0VWhQwnuhf4qWRczMai4TzVuVlY/+4sG6w7g==",
+  "dgSpecHash": "3s6ZSuae+gp4X0dXzOCSS0ANEoU9uu+QuSVZHlgKt0LtnmgxH3saJlzySpBdBLEhLx5F+0CDtyA/fhbshRc5gA==",
   "success": true,
   "projectFilePath": "C:\\Ionut\\cc\\LateralProject\\LateralProject\\API\\API\\API.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\lateral\\.nuget\\packages\\fluentassertions\\6.7.0\\fluentassertions.6.7.0.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\6.0.7\\microsoft.aspnetcore.authentication.jwtbearer.6.0.7.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
@@ -37,6 +36,8 @@
     "C:\\Users\\lateral\\.nuget\\packages\\microsoft.openapi\\1.2.3\\microsoft.openapi.1.2.3.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\microsoft.win32.systemevents\\4.7.0\\microsoft.win32.systemevents.4.7.0.nupkg.sha512",
+    "C:\\Users\\lateral\\.nuget\\packages\\netstandard.library\\2.0.0\\netstandard.library.2.0.0.nupkg.sha512",
+    "C:\\Users\\lateral\\.nuget\\packages\\nunit\\3.13.3\\nunit.3.13.3.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\swashbuckle.aspnetcore\\6.2.3\\swashbuckle.aspnetcore.6.2.3.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.2.3\\swashbuckle.aspnetcore.swagger.6.2.3.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.2.3\\swashbuckle.aspnetcore.swaggergen.6.2.3.nupkg.sha512",

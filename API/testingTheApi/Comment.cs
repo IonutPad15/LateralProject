@@ -9,15 +9,18 @@ namespace testingTheApi
     public class Comment
     {
         public Guid Id { get; set; }
-        public string UserPost { get; set; }
-        public string PostTitle { get; set; }
-        public string UserComment { get; set; }
-        public string TextComment { get; set; }
+        public string? Author { get; set; }
+        
+        public Guid? UserId { get; set; }
+        
+        public Guid? PostId { get; set; }
+        
+        public string CommentBody { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
         public string ToString()
         {
-            string comm = "UserPost: " + UserPost + "   " + PostTitle + "\nUser:" + UserComment + ":   " + TextComment;
+            string comm = "      Author:" + Author + "\n      Comment:" + CommentBody + "\n"; 
             return comm; 
         }
     }

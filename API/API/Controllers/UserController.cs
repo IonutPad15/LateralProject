@@ -26,14 +26,11 @@ namespace API.Controllers
         {
             _context = context;
             _configuration = configuration;
-            //userCodes = new Dictionary<string, RegisterCode>();
 
         }
 
-        //inca nu sunt sigur daca am nevoie de lista de useri
-        //dar o las momentat
         [HttpGet]
-        public async Task<IEnumerable<UserInfo>> Get()
+        public async Task<IEnumerable<UserInfo>> GetUsers()
         {
            
             var usersinfo = from users in _context.Users
@@ -49,33 +46,21 @@ namespace API.Controllers
 
 
 
-        [HttpGet("{id}/posts")]
+        [HttpGet("{id}/postscomments")]
         [ProducesResponseType(typeof(UserPostsInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetPostsByid(Guid id)
+        public async Task<IActionResult> GetPostsAndCommentsByUserId(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
-            //var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.User).Single(x => x.Id == id);
-            var usertester = _context.Users.Include(x => x.Posts).Single(x=> x.Id == id);
+            
+            var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x=>x.Comments).Single(x=> x.Id == id);
             UserPostsInfo userpostinfo = new UserPostsInfo()
             {
                 UserName = usertester.UserName,
                 Email = usertester.Email,
                 Id  = usertester.Id,
-                Posts = usertester.Posts
-            };
-            
-            Console.WriteLine("\n\n\n\n");
-            foreach (var post in usertester.Posts)
-            {
-                Console.WriteLine($"{usertester.UserName} has the post {post.Title} with body:{post.Description}");
-            }
-            Console.WriteLine("\n\n\n\n");
-            var userinfo = new UserInfo()
-            {
-                UserName = user.UserName,
-                Email = user.Email,
-                Id = user.Id
+                Posts = usertester.Posts,
+                Comments = usertester.Comments
             };
             return user == null ? NotFound() : Ok(userpostinfo);
 
@@ -181,7 +166,7 @@ namespace API.Controllers
                         Password = hashedPassword,
                         Id = userCode.Id
                     };
-                    var result = await _context.Users.AddAsync(user);
+                    await _context.Users.AddAsync(user);
 
                     await _context.SaveChangesAsync();
                     return await BuildToken(user);
@@ -326,7 +311,7 @@ namespace API.Controllers
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTkey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var expiration = DateTime.UtcNow.AddDays(1);
+            var expiration = DateTime.Now.AddDays(1);
 
             JwtSecurityToken token = new JwtSecurityToken(
                 issuer: null,

@@ -12,16 +12,23 @@ namespace testingTheApi
         public string UserName { get; set; }
         public string Email { get; set; }
         public List<Post>? Posts { get; set; }
+        public List<Comment>? Comments { get; set; }
         public string ToString()
         {
             StringBuilder user = new StringBuilder();
             user.Append("User: " + UserName + "\nemail: " + Email + "\n");
+            user.Append("Posts:\n");
             foreach(var post in Posts)
             {
                 user.AppendLine("User:" + UserName + "\n" + post.Title + "\n" + post.Description);
             }
-            
+            user.Append("Comments:\n");
+            foreach(var comment in Comments)
+            {
+                user.Append(comment.ToString());
+            }
             return user.ToString();
         }
+
     }
 }

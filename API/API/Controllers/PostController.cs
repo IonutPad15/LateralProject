@@ -44,6 +44,36 @@ namespace API.Controllers
             return post == null ? NotFound() : Ok(post);
 
         }
+        [HttpGet("{id}/comments")]
+        [ProducesResponseType(typeof(UserPostsInfo), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetCommentsByid(Guid id)
+        {
+            var post = await _context.Posts.FindAsync(id);
+            
+            var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id);
+            
+            Post post1 = new Post()
+            {
+                Author = posttester.Author,
+                Created = posttester.Created,
+                Updated = posttester.Updated,
+                Comments = posttester.Comments,
+                Description = posttester.Description,
+                Id = posttester.Id,
+                Title = posttester.Title,
+                UserId = posttester.UserId
+            };
+            Console.WriteLine("\n\n\n\n");
+            foreach (var comment in posttester.Comments)
+            {
+                Console.WriteLine($"{posttester.Title} has the comment {comment.CommentBody}");
+            }
+            Console.WriteLine("\n\n\n\n");
+            
+            return post == null ? NotFound() : Ok(posttester);
+
+        }
 
 
         [HttpPost]

@@ -60,4 +60,4 @@ C:\Ionut\cc\LateralProject\LateralProject\API\API\obj\Debug\net6.0\API.pdb
 C:\Ionut\cc\LateralProject\LateralProject\API\API\obj\Debug\net6.0\API.genruntimeconfig.cache
 C:\Ionut\cc\LateralProject\LateralProject\API\API\obj\Debug\net6.0\ref\API.dll
 C:\Ionut\cc\LateralProject\LateralProject\API\API\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
-C:\Ionut\cc\LateralProject\LateralProject\API\API\bin\Debug\net6.0\FluentAssertions.dll
+C:\Ionut\cc\LateralProject\LateralProject\API\API\bin\Debug\net6.0\nunit.framework.dll

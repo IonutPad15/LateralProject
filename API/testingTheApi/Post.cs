@@ -24,8 +24,18 @@ namespace testingTheApi
         override 
         public string ToString()
         {
-            string post = "User:" +Author+"\n"+Title+"\n"+Description;
+            string post = "User:" +Author+"\n"+Title+"\n"+Description+"\n";
             return post;
+        }
+        public string PostWithComments()
+        {
+            StringBuilder post = new StringBuilder();
+            post.Append(ToString());
+            foreach(var comm in Comments)
+            {
+                post.Append(comm.ToString());
+            }
+            return post.ToString();
         }
     }
 }
