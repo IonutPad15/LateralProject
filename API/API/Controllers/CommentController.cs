@@ -22,7 +22,9 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IEnumerable<Comment>> Get()
         {
-            return await _context.Comments.ToListAsync();
+            List<Comment> comments = await _context.Comments.ToListAsync();
+             comments.RemoveAll(c => c.IsDeleted == true);
+            return comments;
         }
 
         /*
@@ -39,26 +41,40 @@ namespace API.Controllers
         }*/
         
 
-        [HttpPost]
+        [HttpPost("loggedin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Create(Comment comment)
+        public async Task<IActionResult> CreateLoggedIn(Comment comment)
         {
-            if (comment.UserId == null)
-            {
+            var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
 
-                Random rnd = new Random();
-                comment.Author = $"Anonymous{rnd.Next(99999)}";
+            if (userclaim != null)
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userclaim.Value && u.IsDeleted == false);
+                comment.Author = user.UserName;
+                comment.UserId = user.Id;
+                await _context.Comments.AddAsync(comment);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction(nameof(Get), new { id = comment.Id }, comment);
             }
             else
             {
-                var user = await _context.Users.FindAsync(comment.UserId);
-                comment.Author = user.UserName;
+                return BadRequest();
             }
+            
+        }
+        [HttpPost("loggedout")]
+        [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CreateAnonyme(Comment comment)
+        {
+
+
+            Random rnd = new Random();
+            comment.Author = $"Anonymous{rnd.Next(99999)}";
             await _context.Comments.AddAsync(comment);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(Get), new { id = comment.Id }, comment);
         }
-
 
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -70,7 +86,11 @@ namespace API.Controllers
             {
                 return BadRequest("Anonymous comments cannot be editted");
             }
-            var user = await _context.Users.FindAsync(comment.UserId);
+            var user = await _context.Users.FirstOrDefaultAsync(u=> u.Id ==comment.UserId && u.IsDeleted==false);
+            if(user==null)
+            {
+                return BadRequest("Anonymous comments cannot be editted");
+            }
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             
             if (userclaim != null)
@@ -91,16 +111,20 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-           
-            var commentToDelete = await _context.Posts.FindAsync(id);
+
+            var commentToDelete = await _context.Posts.FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted == false);
             if (commentToDelete == null) return NotFound();
             if (commentToDelete.UserId == null)
             {
                 return BadRequest("Anonymous comments cannot be deleted");
             }
-            var user = await _context.Users.FindAsync(commentToDelete.UserId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == commentToDelete.UserId && u.IsDeleted == false);
+            if (user == null)
+            {
+                return BadRequest("Anonymous comments cannot be editted");
+            }
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             
             if (userclaim != null)
@@ -110,8 +134,8 @@ namespace API.Controllers
             }
             
             if (commentToDelete == null) return NotFound();
-
-            _context.Posts.Remove(commentToDelete);
+            commentToDelete.IsDeleted = true;
+            _context.Entry(commentToDelete).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
             return NoContent();

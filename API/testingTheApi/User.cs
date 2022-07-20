@@ -14,6 +14,7 @@ namespace testingTheApi
         public string Password { get; set; }
 
         public List<Post> Posts { get; set; }
+        public bool IsDeleted { get; set; }
         override
         public string ToString()
         {

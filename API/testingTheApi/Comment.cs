@@ -18,6 +18,7 @@ namespace testingTheApi
         public string CommentBody { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
+        public bool IsDeleted { get; set; }
         public string ToString()
         {
             string comm = "      Author:" + Author + "\n      Comment:" + CommentBody + "\n"; 

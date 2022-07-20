@@ -24,7 +24,8 @@ namespace API.Models
         //navigation properties
         [ForeignKey("User")]
         public Guid? UserId { get; set; }
-        public string Author { get; set; }
-        public List<Comment> Comments { get; set; }
+        public string? Author { get; set; }
+        public List<Comment>? Comments { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

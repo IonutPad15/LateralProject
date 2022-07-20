@@ -18,9 +18,10 @@ namespace testingTheApi
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
 
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
         public string Author { get; set; }
-        public List<Comment> Comments { get; set; }
+        public List<Comment>? Comments { get; set; }
+        public bool IsDeleted { get; set; }
         override 
         public string ToString()
         {

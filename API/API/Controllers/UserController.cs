@@ -34,6 +34,7 @@ namespace API.Controllers
         {
            
             var usersinfo = from users in _context.Users
+                            where users.IsDeleted == false
                             select new UserInfo()
                             {
                                 Id = users.Id,
@@ -51,7 +52,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPostsAndCommentsByUserId(Guid id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users.FirstOrDefaultAsync(u=> id==u.Id &&u.IsDeleted==false);
             
             var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x=>x.Comments).Single(x=> x.Id == id);
             UserPostsInfo userpostinfo = new UserPostsInfo()
@@ -95,7 +96,7 @@ namespace API.Controllers
         {
 
             //ResultCode code =
-            var usernameExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            var usernameExists = await _context.Users.FirstOrDefaultAsync(u =>  u.UserName == username &&u.IsDeleted==false);
             if (usernameExists == null)
             {
                 
@@ -114,30 +115,7 @@ namespace API.Controllers
             }
 
         }
-        //[HttpPost("getcode")]
-        //public async Task<ActionResult> GetCode( User user)
-        //{
-
-        //    //ResultCode code =
-        //    Sender sender = new Sender();
-        //    string verif = sender.SendEmail(user.Email);
-        //    if (!verif.Equals(ResultCode.Error.ToString()) && !verif.Equals(ResultCode.InvalidAdress.ToString()))
-        //    {
-        //        RegisterCode code = new RegisterCode()
-        //        {
-        //            Code = verif,
-        //            Created = DateTime.Now
-        //        };
-        //        userCodes.Add(user.UserName, code);
-        //        return Ok(user);
-        //    }
-        //    else
-        //    {
-        //        return BadRequest("Eroare");
-        //    }
-
-        //}
-        ///Sendemail
+        
         [HttpPost("create")]
         [ProducesResponseType(typeof(UserCode), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
@@ -196,7 +174,7 @@ namespace API.Controllers
             {
                 if (!userclaim.Value.Equals(user.UserName))
                     return BadRequest("Not his account");
-                var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName);
+                var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName && u.IsDeleted==false);
 
                 HashHelper hashHelper = new HashHelper();
                 string hashedPassword = hashHelper.GetHash(user.Password);
@@ -218,7 +196,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetDeleteCode([FromQuery] string username, [FromQuery] string email)
         {
-            var usernameExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            var usernameExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username &&u.IsDeleted==false);
             if (usernameExists != null)
             {
                
@@ -242,9 +220,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromQuery] string username, [FromQuery]string codeFromUser)
         {
-            var userToDelete = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            var userToDelete = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username &&u.IsDeleted==false);
             if (userToDelete == null) return NotFound();
-            //TODO: variables start with a lowercase
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
             {
@@ -262,7 +239,28 @@ namespace API.Controllers
                     }
                     else if(code.Code.Equals(codeFromUser))
                     {
-                        _context.Users.Remove(userToDelete);
+                        
+                        var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.Comments).Single(x => x.Id == userToDelete.Id);
+                        //usertester.Posts.Find(p => p.UserId == usertester.Id).Author = "[User Deleted]";
+                        //_context.Entry(usertester.Posts).State = EntityState.Modified;
+                        for (int i=0;i<usertester.Posts.Count;++i)
+                        {
+                            var post = usertester.Posts[i];
+                            post.Author = "[User Deleted]";
+                            post.UserId = null;
+                            post.Updated = DateTime.Now;
+                            _context.Entry(post).State = EntityState.Modified;
+                        }
+                        for (int i = 0; i < usertester.Comments.Count; ++i)
+                        {
+                            var comment = usertester.Comments[i];
+                            comment.Author = "[User Deleted]";
+                            comment.UserId = null;
+                            comment.Updated = DateTime.Now;
+                            _context.Entry(comment).State = EntityState.Modified;
+                        }
+                        userToDelete.IsDeleted = true;
+                        _context.Entry(userToDelete).State = EntityState.Modified;
                         await _context.SaveChangesAsync();
 
                         return NoContent();
@@ -285,6 +283,7 @@ namespace API.Controllers
                             where (users.Email == user.Email
                             || users.UserName == user.UserName)
                             && users.Password == hashedPassword
+                            && users.IsDeleted==false
                             select users;
             if(!foundUser.Any())
             {

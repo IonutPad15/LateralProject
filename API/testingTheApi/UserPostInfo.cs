@@ -23,7 +23,8 @@ namespace testingTheApi
                 user.AppendLine("User:" + UserName + "\n" + post.Title + "\n" + post.Description);
             }
             user.Append("Comments:\n");
-            foreach(var comment in Comments)
+            if(Comments!= null)
+            foreach (var comment in Comments)
             {
                 user.Append(comment.ToString());
             }

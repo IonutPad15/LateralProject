@@ -206,68 +206,64 @@ string urlComments = "https://localhost:7083" + "/api/comment";
 
 //<get all posts and comments of a user>
 
-response = await client.GetAsync("api/user");
-if (response.IsSuccessStatusCode)
-{
-    var users2 = await response.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
-    var user2 = users2.FirstOrDefault();
-    response = await client.GetAsync($"{urlAccounts}/{user2.Id}/postscomments");
-    if (response.IsSuccessStatusCode)
-    {
-        var user3 = await response.Content.ReadFromJsonAsync<UserPostInfo>();
-        Console.WriteLine(user3.ToString());
-    }
-}
+//response = await client.GetAsync("api/user");
+//if (response.IsSuccessStatusCode)
+//{
+//    var users2 = await response.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
+//    var user2 = users2.FirstOrDefault();
+//    response = await client.GetAsync($"{urlAccounts}/{user2.Id}/postscomments");
+//    if (response.IsSuccessStatusCode)
+//    {
+//        var user3 = await response.Content.ReadFromJsonAsync<UserPostInfo>();
+//        Console.WriteLine(user3.ToString());
+//    }
+//}
 
 //</get all posts and comments of a user>
 
 
-//<create comment>
-//response = await client.GetAsync("api/post");
-//response2 = await client.GetAsync("api/user");
-//if (response.IsSuccessStatusCode
-//    && response2.IsSuccessStatusCode)
-//{
-//    var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
-//    var post = posts.FirstOrDefault();
-//    var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
-//    var user = users.FirstOrDefault();
-//    response3 = await client.GetAsync("api/comment");
+//< create comment >
+response = await client.GetAsync("api/post");
+response2 = await client.GetAsync("api/user");
+if (response.IsSuccessStatusCode
+    && response2.IsSuccessStatusCode)
+{
+    var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
+    var post = posts.LastOrDefault();
+    response3 = await client.GetAsync("api/comment");
 
-//    Comment comment = new Comment()
-//    {
-//        CommentBody = "Cum indraznesti?",
-//        Created = DateTime.Now,
-//        Updated = DateTime.Now,
-//        UserId = user.Id,
-//        Author = user.UserName,
-//        PostId = post.Id
+    Comment comment = new Comment()
+    {
+        CommentBody = "Indraznesc ca pot",
+        Created = DateTime.Now,
+        Updated = DateTime.Now,
+        PostId = post.Id
 
-//    };
-//    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-//    var httpResponseToken = await client.PostAsJsonAsync($"{urlAccounts}/login", credentials);
-//    var responseToken = JsonSerializer.Deserialize<UserToken>(await
-//        httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
-//    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-//        responseToken.Token);
-//    //<update comment>s
-//    //var comments1 = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
-//    //var comment = comments1.First();
-//    //comment.CommentBody = "CommentBody4";
-//    //var requestComm = await client.PutAsJsonAsync($"{urlComments}/{comment.Id}", comment);
+    };
+    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+    var httpResponseToken = await client.PostAsJsonAsync($"{urlAccounts}/login", credentials);
+    var responseToken = JsonSerializer.Deserialize<UserToken>(await
+        httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+        responseToken.Token);
+    //<update comment>s
+    //var comments1 = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
+    //var comment = comments1.First();
+    //comment.CommentBody = "CommentBody4";
+    //var requestComm = await client.PutAsJsonAsync($"{urlComments}/{comment.Id}", comment);
 
-//    //</update comment>
-//    var requestComm = await client.PostAsJsonAsync(urlComments, comment);
-//    response3 = await client.GetAsync("api/comment");
-//    if (response3.IsSuccessStatusCode)
-//    {
-//        var comments = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
-//        foreach (var comment2 in comments)
-//        {
-//            Console.WriteLine(comment2.ToString());
-//        }
-//    }
-//}
+    //</update comment>
+    var requestComm = await client.PostAsJsonAsync($"{urlComments}/loggedin", comment);
+    response3 = await client.GetAsync("api/comment");
+    if (response3.IsSuccessStatusCode)
+    {
+        var comments = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
+        foreach (var comment2 in comments)
+        {
+            Console.WriteLine(comment2.ToString());
+        }
+    }
+}
 
 //</create comment>
 
@@ -276,19 +272,11 @@ if (response.IsSuccessStatusCode)
 //response2 = await client.GetAsync("api/user");
 //var users2 = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
 //var user2 = users2.FirstOrDefault();
-//User user1 = new User()
-//{
-//    Id = user2.Id,
-//    UserName = credentials.UserName,
-//    Password = credentials.Password,
-//    Email = credentials.Email
-//};
+
 //Post newPost = new Post()
 //{
-//    Description = "Body3",
-//    Title = "Postare noua3",
-//    UserId = user2.Id,
-//    Author = user2.UserName,
+//    Description = "BodyPostNou4444",
+//    Title = "PoST nou4444",
 //    Created = DateTime.Now,
 //    Updated = DateTime.Now
 //};
@@ -299,7 +287,7 @@ if (response.IsSuccessStatusCode)
 //    httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
 //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
 //    responseToken.Token);
-//response = await client.GetAsync($"{urlAccounts}/{user2.Id}/posts");
+//response = await client.GetAsync($"{urlAccounts}/{user2.Id}/postscomments");
 //if (response.IsSuccessStatusCode)
 //{
 //    var user3 = await response.Content.ReadFromJsonAsync<UserPostInfo>();
