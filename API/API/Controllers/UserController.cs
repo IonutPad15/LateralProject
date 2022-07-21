@@ -243,21 +243,28 @@ namespace API.Controllers
                         var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.Comments).Single(x => x.Id == userToDelete.Id);
                         //usertester.Posts.Find(p => p.UserId == usertester.Id).Author = "[User Deleted]";
                         //_context.Entry(usertester.Posts).State = EntityState.Modified;
-                        for (int i=0;i<usertester.Posts.Count;++i)
+                        if (usertester.Posts != null)
                         {
-                            var post = usertester.Posts[i];
-                            post.Author = "[User Deleted]";
-                            post.UserId = null;
-                            post.Updated = DateTime.Now;
-                            _context.Entry(post).State = EntityState.Modified;
+                            for (int i = 0; i < usertester.Posts.Count; ++i)
+                            {
+                                var post = usertester.Posts[i];
+                                post.Author = "[User Deleted]";
+                                //post.UserId = null;
+                                post.Updated = DateTime.Now;
+                                //--i;
+                                _context.Entry(post).State = EntityState.Modified;
+                            }
                         }
-                        for (int i = 0; i < usertester.Comments.Count; ++i)
+                        if (usertester.Comments != null)
                         {
-                            var comment = usertester.Comments[i];
-                            comment.Author = "[User Deleted]";
-                            comment.UserId = null;
-                            comment.Updated = DateTime.Now;
-                            _context.Entry(comment).State = EntityState.Modified;
+                            for (int i = 0; i < usertester.Comments.Count; ++i)
+                            {
+                                var comment = usertester.Comments[i];
+                                comment.Author = "[User Deleted]";
+                                //comment.UserId = null;
+                                comment.Updated = DateTime.Now;
+                                _context.Entry(comment).State = EntityState.Modified;
+                            }
                         }
                         userToDelete.IsDeleted = true;
                         _context.Entry(userToDelete).State = EntityState.Modified;

@@ -114,7 +114,7 @@ namespace API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
 
-            var commentToDelete = await _context.Posts.FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted == false);
+            var commentToDelete = await _context.Comments.FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted == false);
             if (commentToDelete == null) return NotFound();
             if (commentToDelete.UserId == null)
             {

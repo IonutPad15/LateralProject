@@ -51,7 +51,7 @@ namespace API.Controllers
         public async Task<IActionResult> GetCommentsByid(Guid id)
         {
             var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
-            var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id);
+            var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id&&x.IsDeleted==false);
             return post == null ? NotFound() : Ok(posttester);
 
         }
@@ -106,19 +106,25 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-
-            var postToDelete = await _context.Posts.FindAsync(id);
-            var user = await _context.Users.FindAsync(postToDelete.UserId);
+            var postToDelete = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
+            if (postToDelete == null) return NotFound();
+            var user = await _context.Users.FirstOrDefaultAsync(u=> u.Id== postToDelete.UserId && u.IsDeleted ==false);
+            if (user == null) return BadRequest("You can't delete this post");
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
             {
                 if (!userclaim.Value.Equals(user.UserName))
                     return BadRequest("Not his post");
             }
-            if (postToDelete == null) return NotFound();
-
+            var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id && x.IsDeleted == false);
+            for(int i=0; i<posttester.Comments.Count;++i)
+            {
+                var comment = posttester.Comments[i];
+                comment.IsDeleted = true;
+                _context.Entry(comment).State = EntityState.Modified;
+            }
             postToDelete.IsDeleted = true;
             _context.Entry(postToDelete).State = EntityState.Modified;
             await _context.SaveChangesAsync();

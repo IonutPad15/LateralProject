@@ -25,18 +25,22 @@ if (
     response.IsSuccessStatusCode && 
     response2.IsSuccessStatusCode && response3.IsSuccessStatusCode)
 {
+    Console.WriteLine("          Post list:   ");
+    
     var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
     foreach (var post in posts)
     {
         Console.WriteLine(post.ToString());
     }
     Console.WriteLine();
+    Console.WriteLine("          Users List:   ");
     var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
     foreach (var user in users)
     {
         Console.WriteLine(user.ToString());
     }
     var comments = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
+    Console.WriteLine("          Comments list:   ");
     foreach (var comment in comments)
     {
         Console.WriteLine(comment.ToString());
@@ -187,6 +191,40 @@ User credentials = new User()
 string url = "https://localhost:7083" + "/api/post";
 string urlAccounts = "https://localhost:7083" + "/api/user";
 string urlComments = "https://localhost:7083" + "/api/comment";
+
+
+//< update post >
+
+
+//response3 = await client.GetAsync(url);
+//response3.EnsureSuccessStatusCode();
+//var posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<Post>>();
+//var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+//var httpResponseToken = await client.PostAsJsonAsync(urlAccounts + "/login", credentials);
+//var responseToken = JsonSerializer.Deserialize<UserToken>(await
+//    httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
+//Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
+
+//Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
+//Post post1 = posts4.LastOrDefault();
+//post1.Description = "Updated";
+//client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+//    responseToken.Token);
+
+//response = await client.PutAsJsonAsync($"{url}/{post1.Id}", post1);
+
+////<delete post>
+//response = await client.DeleteAsync($"{url}/{post1.Id}");
+////</delete post>
+//response3 = await client.GetAsync(url);
+//posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<Post>>();
+//foreach (var post in posts4)
+//{
+//    Console.WriteLine(post.ToString());
+//}
+//</update post>
+
+
 //<get all comments of a post>
 
 //response = await client.GetAsync("api/post");
@@ -223,47 +261,47 @@ string urlComments = "https://localhost:7083" + "/api/comment";
 
 
 //< create comment >
-response = await client.GetAsync("api/post");
-response2 = await client.GetAsync("api/user");
-if (response.IsSuccessStatusCode
-    && response2.IsSuccessStatusCode)
-{
-    var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
-    var post = posts.LastOrDefault();
-    response3 = await client.GetAsync("api/comment");
+//response = await client.GetAsync("api/post");
+//response2 = await client.GetAsync("api/user");
+//if (response.IsSuccessStatusCode
+//    && response2.IsSuccessStatusCode)
+//{
+//    var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
+//    var post = posts.LastOrDefault();
+//    response3 = await client.GetAsync("api/comment");
 
-    Comment comment = new Comment()
-    {
-        CommentBody = "Indraznesc ca pot",
-        Created = DateTime.Now,
-        Updated = DateTime.Now,
-        PostId = post.Id
+//    Comment comment = new Comment()
+//    {
+//        CommentBody = "Asa credeam si eu",
+//        Created = DateTime.Now,
+//        Updated = DateTime.Now,
+//        PostId = post.Id
 
-    };
-    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-    var httpResponseToken = await client.PostAsJsonAsync($"{urlAccounts}/login", credentials);
-    var responseToken = JsonSerializer.Deserialize<UserToken>(await
-        httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
-    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-        responseToken.Token);
-    //<update comment>s
-    //var comments1 = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
-    //var comment = comments1.First();
-    //comment.CommentBody = "CommentBody4";
-    //var requestComm = await client.PutAsJsonAsync($"{urlComments}/{comment.Id}", comment);
-
-    //</update comment>
-    var requestComm = await client.PostAsJsonAsync($"{urlComments}/loggedin", comment);
-    response3 = await client.GetAsync("api/comment");
-    if (response3.IsSuccessStatusCode)
-    {
-        var comments = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
-        foreach (var comment2 in comments)
-        {
-            Console.WriteLine(comment2.ToString());
-        }
-    }
-}
+//    };
+//    //var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+//    //var httpResponseToken = await client.PostAsJsonAsync($"{urlAccounts}/login", credentials);
+//    //var responseToken = JsonSerializer.Deserialize<UserToken>(await
+//    //    httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
+//    //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+//    //    responseToken.Token);
+//    ////<update comment>s
+//    //var comments1 = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
+//    //var comment3 = comments1.Last();
+//    //comment3.CommentBody = "CommentBody4";
+//    //var requestComm2 = await client.PutAsJsonAsync($"{urlComments}/{comment3.Id}", comment3);
+//    //var requestComm3 = await client.DeleteAsync($"{urlComments}/{comment3.Id}");
+//    //</update comment>
+//    var requestComm = await client.PostAsJsonAsync($"{urlComments}/loggedout", comment);
+//    response3 = await client.GetAsync("api/comment");
+//    if (response3.IsSuccessStatusCode)
+//    {
+//        var comments = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
+//        foreach (var comment2 in comments)
+//        {
+//            Console.WriteLine(comment2.ToString());
+//        }
+//    }
+//}
 
 //</create comment>
 
@@ -468,61 +506,9 @@ if (response.IsSuccessStatusCode
 
 
 //</create user>
-/*
-try
-{
-
-
-    var respuesta = await client.PostAsJsonAsync($"{urlAccounts}/create", credentials);
-    if (respuesta.StatusCode == HttpStatusCode.InternalServerError)
-    {
-        respuesta.EnsureSuccessStatusCode();
-    }
-
-}
-catch (Exception e)
-{
-    Console.WriteLine(e);
-}*/
 
 
 
-//<update un post anume, doar daca e logat>
-/*
-response3 = await client.GetAsync(url);
-response3.EnsureSuccessStatusCode();
-var posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<Post>>();
-var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-var httpResponseToken = await client.PostAsJsonAsync(urlAccounts +"/login", credentials);
-var responseToken = JsonSerializer.Deserialize<UserToken>(await
-    httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
-Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
-foreach (var post in posts4)
-{
-    Console.WriteLine(post.ToString());
-    Console.WriteLine();
-}
-Console.WriteLine();Console.WriteLine();Console.WriteLine();
-Post post1;
-post1 = posts4.ToArray()[6];
-var personId = post1.Id;
-newPost.Description = "updated";
-newPost.Id = personId;
-client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-    responseToken.Token);
-
-
-
-response = await client.PutAsJsonAsync($"{url}/{personId}", newPost);
-Console.WriteLine(response.StatusCode);
-response3 = await client.GetAsync(url);
-posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<Post>>();
-foreach (var post in posts4)
-{
-    Console.WriteLine(post.ToString());
-}
-//</update un post anume, doar daca e logat>
- */
 
 Console.WriteLine("Post created successfully");
 Console.ReadLine();
