@@ -7,6 +7,8 @@ using System.Text.Json;
 using System.Text;
 using System.Net;
 using System.Web;
+using Models.Request;
+using Models.Response;
 
 Console.WriteLine(DateTime.Now);
 HttpClient client = new();
@@ -27,18 +29,18 @@ if (
 {
     Console.WriteLine("          Post list:   ");
     
-    var posts = await response.Content.ReadFromJsonAsync<IEnumerable<Post>>();
+    var posts = await response.Content.ReadFromJsonAsync<IEnumerable<PostInfo>>();
     foreach (var post in posts)
     {
-        Console.WriteLine(post.ToString());
+        Console.WriteLine(post.PostWithComments());
     }
     Console.WriteLine();
     Console.WriteLine("          Users List:   ");
-    var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
-    foreach (var user in users)
-    {
-        Console.WriteLine(user.ToString());
-    }
+    //var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
+    //foreach (var user in users)
+    //{
+    //    Console.WriteLine(user.ToString());
+    //}
     var comments = await response3.Content.ReadFromJsonAsync<IEnumerable<Comment>>();
     Console.WriteLine("          Comments list:   ");
     foreach (var comment in comments)
@@ -203,18 +205,20 @@ string urlComments = "https://localhost:7083" + "/api/comment";
 //var httpResponseToken = await client.PostAsJsonAsync(urlAccounts + "/login", credentials);
 //var responseToken = JsonSerializer.Deserialize<UserToken>(await
 //    httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
+//client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+//    responseToken.Token);
 //Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
 
 //Console.WriteLine(); Console.WriteLine(); Console.WriteLine();
 //Post post1 = posts4.LastOrDefault();
-//post1.Description = "Updated";
-//client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-//    responseToken.Token);
+//post1.Description = "Updated again";
+//string description = post1.Description;
 
-//response = await client.PutAsJsonAsync($"{url}/{post1.Id}", post1);
+//response = await client.PutAsJsonAsync($"{url}/{post1.Id}", "Altceva!");
+////response = await client.PutAsJsonAsync($"{url}/{post1.Id}", post1);
 
 ////<delete post>
-//response = await client.DeleteAsync($"{url}/{post1.Id}");
+////response = await client.DeleteAsync($"{url}/{post1.Id}");
 ////</delete post>
 //response3 = await client.GetAsync(url);
 //posts4 = await response3.Content.ReadFromJsonAsync<IEnumerable<Post>>();
@@ -222,6 +226,8 @@ string urlComments = "https://localhost:7083" + "/api/comment";
 //{
 //    Console.WriteLine(post.ToString());
 //}
+
+
 //</update post>
 
 
@@ -261,6 +267,8 @@ string urlComments = "https://localhost:7083" + "/api/comment";
 
 
 //< create comment >
+
+
 //response = await client.GetAsync("api/post");
 //response2 = await client.GetAsync("api/user");
 //if (response.IsSuccessStatusCode
@@ -272,7 +280,7 @@ string urlComments = "https://localhost:7083" + "/api/comment";
 
 //    Comment comment = new Comment()
 //    {
-//        CommentBody = "Asa credeam si eu",
+//        CommentBody = "Yup,are dreptate",
 //        Created = DateTime.Now,
 //        Updated = DateTime.Now,
 //        PostId = post.Id
@@ -291,7 +299,7 @@ string urlComments = "https://localhost:7083" + "/api/comment";
 //    //var requestComm2 = await client.PutAsJsonAsync($"{urlComments}/{comment3.Id}", comment3);
 //    //var requestComm3 = await client.DeleteAsync($"{urlComments}/{comment3.Id}");
 //    //</update comment>
-//    var requestComm = await client.PostAsJsonAsync($"{urlComments}/loggedout", comment);
+//    var requestComm = await client.PostAsJsonAsync($"{urlComments}/loggedout", comment.CommentBody);
 //    response3 = await client.GetAsync("api/comment");
 //    if (response3.IsSuccessStatusCode)
 //    {
@@ -309,7 +317,7 @@ string urlComments = "https://localhost:7083" + "/api/comment";
 
 //response2 = await client.GetAsync("api/user");
 //var users2 = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
-//var user2 = users2.FirstOrDefault();
+//var user2 = users2.LastOrDefault();
 
 //Post newPost = new Post()
 //{
@@ -406,7 +414,7 @@ string urlComments = "https://localhost:7083" + "/api/comment";
 //            UserName = credentials.UserName,
 //            Code = code
 //        };
-//        var respueste = await client.DeleteAsync($"{urlAccounts}/delete?username={userCode.UserName}&&codeFromUser={userCode.Code.Code}");
+//        var respueste = await client.DeleteAsync($"{urlAccounts}/delete?username={userCode.UserName}&&codeFromUser={userCode.Code.Code}&&created={userCode.Code.Created.ToString()}");
 //        if (respueste.StatusCode == HttpStatusCode.InternalServerError)
 //        {
 //            respueste.EnsureSuccessStatusCode();

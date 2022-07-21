@@ -10,8 +10,8 @@ using System.IdentityModel.Tokens.Jwt;
 using API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+using Models.Request;
+using Models.Response;
 
 namespace API.Controllers
 {
@@ -94,7 +94,7 @@ namespace API.Controllers
         [HttpGet("registercode")]
         public async Task<ActionResult> GetRegisterCode([FromQuery] string username,[FromQuery] string email)
         {
-
+            if (username == null || email == null) return BadRequest("username and email are required");
             //ResultCode code =
             var usernameExists = await _context.Users.FirstOrDefaultAsync(u =>  u.UserName == username &&u.IsDeleted==false);
             if (usernameExists == null)
@@ -120,14 +120,19 @@ namespace API.Controllers
         [ProducesResponseType(typeof(UserCode), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<UserToken>> Create([FromBody] UserCode userCode)
+        public async Task<ActionResult<UserToken>> CreateUser([FromBody] UserCode userCode)
         {
-
+            if (userCode.UserName == null 
+                || userCode.Email == null
+                || userCode.Password == null
+                || userCode.Code == null
+                || userCode.Code.Code == null) return BadRequest("All fields required");
+            if (userCode.Password.Length < 8) return BadRequest("Password too short");
             if (userCodes.ContainsKey(userCode.UserName))
             {
                 RegisterCode code = userCodes[userCode.UserName];
-                DateTime dateTime = DateTime.Now;
-                TimeSpan diff = dateTime.Subtract(code.Created);
+                
+                TimeSpan diff = userCode.Code.Created.Subtract(code.Created);
                 
                 if(diff.TotalSeconds>60)
                 {
@@ -168,14 +173,16 @@ namespace API.Controllers
         public async Task<IActionResult> Update(User user)
         {
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
-            
-            
+            var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
+
             if (userclaim != null)
             {
                 if (!userclaim.Value.Equals(user.UserName))
                     return BadRequest("Not his account");
+                if (!emailclaim.Value.Equals(user.Email))
+                    return BadRequest("Not his account");
                 var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName && u.IsDeleted==false);
-
+                if (userToUpdate == null) return NotFound();
                 HashHelper hashHelper = new HashHelper();
                 string hashedPassword = hashHelper.GetHash(user.Password);
 
@@ -183,8 +190,13 @@ namespace API.Controllers
                 userToUpdate.Password = hashedPassword;
                 _context.Entry(userToUpdate).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-
-                return Ok(user);
+                UserInfo userInfo = new UserInfo()
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    UserName = user.UserName
+                };
+                return Ok(userInfo);
             }
             //var userToUpdate = user;
             return NoContent();
@@ -218,19 +230,23 @@ namespace API.Controllers
         [HttpDelete("delete")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete([FromQuery] string username, [FromQuery]string codeFromUser)
+        public async Task<IActionResult> DeleteUser([FromQuery] string username,
+            [FromQuery]string codeFromUser,
+            [FromQuery] string created
+            )
         {
             var userToDelete = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username &&u.IsDeleted==false);
             if (userToDelete == null) return NotFound();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
             {
-                if (!userclaim.Value.Equals(userToDelete.UserName))
-                    return BadRequest("Not his account");
                 if (userCodes.ContainsKey(username))
+                    if (!userclaim.Value.Equals(userToDelete.UserName))
+                    return BadRequest("Not his account");
+                
                 {
                     RegisterCode code = userCodes[username];
-                    DateTime dateTime = DateTime.Now;
+                    DateTime dateTime = DateTime.Parse(created);
                     TimeSpan diff = dateTime.Subtract(code.Created);
 
                     if (diff.TotalSeconds > 60)
@@ -284,6 +300,7 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserToken>> Login([FromBody] User user)
         {
+            //fa doar cu username sau doar cu email
             HashHelper hashHelper = new HashHelper();
             string hashedPassword = hashHelper.GetHash(user.Password);
             var foundUser = from users in _context.Users
@@ -308,7 +325,8 @@ namespace API.Controllers
             var claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Email, user.Email)
+                //new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
 
 

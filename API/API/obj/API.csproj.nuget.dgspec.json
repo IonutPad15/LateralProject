@@ -27,7 +27,11 @@
         "frameworks": {
           "net6.0": {
             "targetAlias": "net6.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\Ionut\\cc\\LateralProject\\LateralProject\\API\\Models\\Models.csproj": {
+                "projectPath": "C:\\Ionut\\cc\\LateralProject\\LateralProject\\API\\Models\\Models.csproj"
+              }
+            }
           }
         },
         "warningProperties": {
@@ -83,6 +87,21 @@
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.301\\RuntimeIdentifierGraph.json"
         }
+      }
+    },
+    "C:\\Ionut\\cc\\LateralProject\\LateralProject\\API\\Models\\Models.csproj": {
+      "restore": {
+        "projectUniqueName": "C:\\Ionut\\cc\\LateralProject\\LateralProject\\API\\Models\\Models.csproj",
+        "projectName": "Models",
+        "projectPath": "C:\\Ionut\\cc\\LateralProject\\LateralProject\\API\\Models\\Models.csproj",
+        "frameworks": {
+          "net48": {
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net48": {}
       }
     }
   }

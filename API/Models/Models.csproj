@@ -42,6 +42,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Request\PostRequest.cs" />
+    <Compile Include="Request\UserRequest.cs" />
+    <Compile Include="Request\UserCode.cs" />
+    <Compile Include="Request\ValidationCode.cs" />
+    <Compile Include="Response\CommentInfo.cs" />
+    <Compile Include="Response\PostInfo.cs" />
+    <Compile Include="Response\UserInfo.cs" />
+    <Compile Include="Response\UserPostsCommentsInfo.cs" />
+    <Compile Include="Response\UserToken.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

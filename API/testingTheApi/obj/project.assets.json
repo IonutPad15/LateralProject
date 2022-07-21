@@ -66,6 +66,15 @@
           "build/System.Text.Json.targets": {},
           "buildTransitive/netcoreapp3.1/_._": {}
         }
+      },
+      "Models/1.0.0": {
+        "type": "project",
+        "compile": {
+          "bin/placeholder/Models.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Models.dll": {}
+        }
       }
     }
   },
@@ -200,10 +209,16 @@
         "system.text.json.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "Models/1.0.0": {
+      "type": "project",
+      "path": "../Models/Models.csproj",
+      "msbuildProject": "../Models/Models.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net6.0": [
+      "Models >= 1.0.0",
       "System.Net.Http.Json >= 6.0.0",
       "System.Text.Json >= 6.0.5"
     ]
@@ -234,7 +249,11 @@
       "frameworks": {
         "net6.0": {
           "targetAlias": "net6.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Ionut\\cc\\LateralProject\\LateralProject\\API\\Models\\Models.csproj": {
+              "projectPath": "C:\\Ionut\\cc\\LateralProject\\LateralProject\\API\\Models\\Models.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
