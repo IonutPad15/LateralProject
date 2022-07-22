@@ -16,8 +16,9 @@ namespace API.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<User>(entity => {
-                entity.HasIndex(e => e.Email).IsUnique();
-                entity.HasIndex(e => e.UserName).IsUnique();
+                
+                entity.HasIndex(e => new { e.Email, e.IsDeleted }).IsUnique();
+                entity.HasIndex(e => new { e.UserName, e.IsDeleted }).IsUnique();
             });
             //builder.Entity<Post>(entity =>
             //{

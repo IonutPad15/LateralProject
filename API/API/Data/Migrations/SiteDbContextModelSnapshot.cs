@@ -66,7 +66,6 @@ namespace API.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Author")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Created")
@@ -122,10 +121,10 @@ namespace API.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
+                    b.HasIndex("Email", "IsDeleted")
                         .IsUnique();
 
-                    b.HasIndex("UserName")
+                    b.HasIndex("UserName", "IsDeleted")
                         .IsUnique();
 
                     b.ToTable("Users");

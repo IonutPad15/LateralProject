@@ -58,7 +58,7 @@ namespace API.Controllers
         [HttpPost("loggedin")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
-        public async Task<IActionResult> CreateLoggedIn([FromBody]String body)
+        public async Task<IActionResult> CreateLoggedIn([FromBody] CommentRequest commentRequest)
         {
             Comment comment = new Comment();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
@@ -66,9 +66,10 @@ namespace API.Controllers
             if (userclaim != null)
             {
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userclaim.Value && u.IsDeleted == false);
-                comment.CommentBody = commentInfo.Body = body;
+                comment.CommentBody = commentInfo.Body = commentRequest.Body;
                 comment.Author = commentInfo.Author = user.UserName;
                 comment.UserId = user.Id;
+                comment.PostId = commentRequest.PostId;
                 comment.Updated = commentInfo.Updated = DateTime.Now;
                 comment.Created = commentInfo.Created = DateTime.Now;
                 await _context.Comments.AddAsync(comment);
@@ -83,13 +84,14 @@ namespace API.Controllers
         }
         [HttpPost("loggedout")]
         [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
-        public async Task<IActionResult> CreateAnonyme([FromBody] string body)
+        public async Task<IActionResult> CreateAnonyme([FromBody] CommentRequest commentRequest)
         {
             CommentInfo commentInfo = new CommentInfo();
             Comment comment = new Comment();
             Random rnd = new Random();
             comment.Author =commentInfo.Author = $"Anonymous{rnd.Next(99999)}";
-            comment.CommentBody = body;
+            comment.CommentBody = commentRequest.Body;
+            comment.PostId = commentRequest.PostId;
             comment.Updated = commentInfo.Updated = DateTime.Now;
             comment.Created = commentInfo.Created = DateTime.Now;
             await _context.Comments.AddAsync(comment);

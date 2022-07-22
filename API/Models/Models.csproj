@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Request\CommentRequest.cs" />
+    <Compile Include="Request\Credentials.cs" />
     <Compile Include="Request\PostRequest.cs" />
     <Compile Include="Request\UserRequest.cs" />
     <Compile Include="Request\UserCode.cs" />

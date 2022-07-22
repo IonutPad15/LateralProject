@@ -27,6 +27,7 @@ namespace API.Controllers
             //List<Post> posts = await _context.Posts.ToListAsync();
             //posts.RemoveAll(p => p.IsDeleted == true);
             List<Post> posts = await _context.Posts.Include(x => x.Comments ).ToListAsync();
+            posts.RemoveAll(p => p.IsDeleted == true);
             var postinfos = from post in _context.Posts
                             where post.IsDeleted == false
                             select new PostInfo()
@@ -40,7 +41,7 @@ namespace API.Controllers
                             };
             int i = 0;
             List<PostInfo> postsInfo = await postinfos.ToListAsync<PostInfo>();
-            foreach(var post in posts)
+            foreach(Post post in posts)
             {
                 foreach(var comment in post.Comments)
                 {
@@ -68,12 +69,22 @@ namespace API.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(Post), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PostInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPostByid(Guid id)
         {
             var post = await _context.Posts.FirstOrDefaultAsync(p=>p.Id==id && p.IsDeleted==false);
-            return post == null ? NotFound() : Ok(post);
+            PostInfo postInfo = new PostInfo()
+            {
+                Author = post.Author,
+                Body = post.Description,
+                Created = post.Created,
+                Id = id,
+                Title = post.Title,
+                Updated = post.Updated
+
+            };
+            return post == null ? NotFound() : Ok(postInfo);
 
         }
         [HttpGet("{id}/comments")]
@@ -94,7 +105,14 @@ namespace API.Controllers
             };
                 foreach (var comment in postcomments.Comments)
             {
-                CommentInfo commentinfo = new CommentInfo();
+                CommentInfo commentinfo = new CommentInfo()
+                {
+                    Author = comment.Author,
+                    Body = comment.Body,
+                    Created = comment.Created,
+                    Updated = comment.Updated,
+                    Id = comment.Id
+                };
                 postcomments.Comments.Add(commentinfo);
             }
             return posttester == null ? NotFound() : Ok(postcomments);
@@ -105,7 +123,7 @@ namespace API.Controllers
         [HttpPost]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [ProducesResponseType(typeof(Post), StatusCodes.Status200OK)]
-        public async Task<ActionResult<Post>> Create(PostRequest postrequest)
+        public async Task<ActionResult<Post>> CreatePost(PostRequest postrequest)
         {
             //ia userul din claim
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
@@ -155,6 +173,16 @@ namespace API.Controllers
             post.Description = newDesciption;
             post.Updated = DateTime.Now;
             _context.Entry(post).State = EntityState.Modified;
+            PostInfo postInfo = new PostInfo()
+            {
+                Created = post.Created,
+                Updated = post.Updated,
+                Body = post.Description,
+                Author = post.Author,
+                Id = post.Id,
+                Title = post.Title
+
+            };
             await _context.SaveChangesAsync();
 
             return Ok();

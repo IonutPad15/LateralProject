@@ -19,7 +19,7 @@ namespace API.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private static Dictionary<string, RegisterCode> userCodes= new Dictionary<string, RegisterCode>();
+        private static Dictionary<string, ValidationCode> userCodes= new Dictionary<string, ValidationCode>();
         private readonly SiteDbContext _context;
         private readonly IConfiguration _configuration;
         public UserController(SiteDbContext context, IConfiguration configuration)
@@ -46,27 +46,73 @@ namespace API.Controllers
         }
 
 
-
         [HttpGet("{id}/postscomments")]
-        [ProducesResponseType(typeof(UserPostsInfo), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(UserPostsCommentsInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPostsAndCommentsByUserId(Guid id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u=> id==u.Id &&u.IsDeleted==false);
-            
-            var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x=>x.Comments).Single(x=> x.Id == id);
-            UserPostsInfo userpostinfo = new UserPostsInfo()
+            var user = await _context.Users.FirstOrDefaultAsync(u => id == u.Id && u.IsDeleted == false);
+
+            var usertester = _context.Users.Include(x => x.Posts)
+                                           .ThenInclude(x => x.Comments)
+                                           .Single(x => x.Id == id &&x.IsDeleted == false);
+            UserPostsCommentsInfo userpostinfo = new UserPostsCommentsInfo()
             {
                 UserName = usertester.UserName,
                 Email = usertester.Email,
-                Id  = usertester.Id,
-                Posts = usertester.Posts,
-                Comments = usertester.Comments
+                Id = usertester.Id,
+                
             };
+            foreach(var post in usertester.Posts)
+            {
+                PostInfo postInfo = new PostInfo()
+                {
+                    Id = post.Id,
+                    Created = post.Created,
+                    Author = post.Author,
+                    Body = post.Description,
+                    Title = post.Title,
+                    Updated = post.Updated
+                };
+                userpostinfo.Posts.Add(postInfo);
+            }
+            foreach (var comment in usertester.Comments)
+            {
+                CommentInfo commentInfo = new CommentInfo()
+                {
+                    Id = comment.Id,
+                    Created = comment.Created,
+                    Author = comment.Author,
+                    Body = comment.CommentBody,
+                    
+                    Updated = comment.Updated
+                    
+                };
+                userpostinfo.Comments.Add(commentInfo);
+            }
             return user == null ? NotFound() : Ok(userpostinfo);
 
         }
-        
+        //[HttpGet("{id}/postscomments")]
+        //[ProducesResponseType(typeof(UserPostsInfo), StatusCodes.Status200OK)]
+        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+        //public async Task<IActionResult> GetPostsAndCommentsByUserId(Guid id)
+        //{
+        //    var user = await _context.Users.FirstOrDefaultAsync(u=> id==u.Id &&u.IsDeleted==false);
+
+        //    var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x=>x.Comments).Single(x=> x.Id == id);
+        //    UserPostsInfo userpostinfo = new UserPostsInfo()
+        //    {
+        //        UserName = usertester.UserName,
+        //        Email = usertester.Email,
+        //        Id  = usertester.Id,
+        //        Posts = usertester.Posts,
+        //        Comments = usertester.Comments
+        //    };
+        //    return user == null ? NotFound() : Ok(userpostinfo);
+
+        //}
+
 
         private enum ResultCode
         {
@@ -78,7 +124,7 @@ namespace API.Controllers
             string verif = sender.SendEmail(email, message);
             if (!verif.Equals(ResultCode.Error.ToString()) && !verif.Equals(ResultCode.InvalidAdress.ToString()))
             {
-                RegisterCode code = new RegisterCode()
+                ValidationCode code = new ValidationCode()
                 {
                     Code = verif,
                     Created = DateTime.Now
@@ -130,7 +176,7 @@ namespace API.Controllers
             if (userCode.Password.Length < 8) return BadRequest("Password too short");
             if (userCodes.ContainsKey(userCode.UserName))
             {
-                RegisterCode code = userCodes[userCode.UserName];
+                ValidationCode code = userCodes[userCode.UserName];
                 
                 TimeSpan diff = userCode.Code.Created.Subtract(code.Created);
                 
@@ -170,18 +216,21 @@ namespace API.Controllers
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(User user)
+        public async Task<IActionResult> Update(Credentials user)
         {
+            var userToUpdate = await _context.Users.FirstOrDefaultAsync(u =>
+                (u.UserName == user.NameEmail || u.Email == user.NameEmail) && u.IsDeleted == false);
+            if (userToUpdate == null) return NotFound();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
 
             if (userclaim != null)
             {
-                if (!userclaim.Value.Equals(user.UserName))
+                
+                if (!userclaim.Value.Equals(userToUpdate.UserName) || !emailclaim.Value.Equals(userToUpdate.Email))
                     return BadRequest("Not his account");
-                if (!emailclaim.Value.Equals(user.Email))
-                    return BadRequest("Not his account");
-                var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName && u.IsDeleted==false);
+                
+                
                 if (userToUpdate == null) return NotFound();
                 HashHelper hashHelper = new HashHelper();
                 string hashedPassword = hashHelper.GetHash(user.Password);
@@ -192,15 +241,50 @@ namespace API.Controllers
                 await _context.SaveChangesAsync();
                 UserInfo userInfo = new UserInfo()
                 {
-                    Id = user.Id,
-                    Email = user.Email,
-                    UserName = user.UserName
+                    Id = userToUpdate.Id,
+                    Email = userToUpdate.Email,
+                    UserName = userToUpdate.UserName
                 };
                 return Ok(userInfo);
             }
             //var userToUpdate = user;
             return NoContent();
         }
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //[HttpPut]
+        //[ProducesResponseType(StatusCodes.Status204NoContent)]
+        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //public async Task<IActionResult> Update(User user)
+        //{
+        //    var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+        //    var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
+
+        //    if (userclaim != null)
+        //    {
+        //        if (!userclaim.Value.Equals(user.UserName))
+        //            return BadRequest("Not his account");
+        //        if (!emailclaim.Value.Equals(user.Email))
+        //            return BadRequest("Not his account");
+        //        var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName && u.IsDeleted==false);
+        //        if (userToUpdate == null) return NotFound();
+        //        HashHelper hashHelper = new HashHelper();
+        //        string hashedPassword = hashHelper.GetHash(user.Password);
+
+
+        //        userToUpdate.Password = hashedPassword;
+        //        _context.Entry(userToUpdate).State = EntityState.Modified;
+        //        await _context.SaveChangesAsync();
+        //        UserInfo userInfo = new UserInfo()
+        //        {
+        //            Id = user.Id,
+        //            Email = user.Email,
+        //            UserName = user.UserName
+        //        };
+        //        return Ok(userInfo);
+        //    }
+        //    //var userToUpdate = user;
+        //    return NoContent();
+        //}
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("deletecode")]
@@ -245,7 +329,7 @@ namespace API.Controllers
                     return BadRequest("Not his account");
                 
                 {
-                    RegisterCode code = userCodes[username];
+                    ValidationCode code = userCodes[username];
                     DateTime dateTime = DateTime.Parse(created);
                     TimeSpan diff = dateTime.Subtract(code.Created);
 
@@ -255,10 +339,12 @@ namespace API.Controllers
                     }
                     else if(code.Code.Equals(codeFromUser))
                     {
-                        
-                        var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.Comments).Single(x => x.Id == userToDelete.Id);
+
+                        var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false) ;
                         //usertester.Posts.Find(p => p.UserId == usertester.Id).Author = "[User Deleted]";
                         //_context.Entry(usertester.Posts).State = EntityState.Modified;
+                        usertester.Posts.RemoveAll(p => p.IsDeleted == true);
+                        usertester.Comments.RemoveAll(c => c.IsDeleted == true);
                         if (usertester.Posts != null)
                         {
                             for (int i = 0; i < usertester.Posts.Count; ++i)
@@ -296,30 +382,44 @@ namespace API.Controllers
             }
             return BadRequest("Eroare");
         }
-        
         [HttpPost("login")]
-        public async Task<ActionResult<UserToken>> Login([FromBody] User user)
+        public async Task<ActionResult<UserToken>> Login([FromBody] Credentials credentials)
         {
             //fa doar cu username sau doar cu email
             HashHelper hashHelper = new HashHelper();
-            string hashedPassword = hashHelper.GetHash(user.Password);
-            var foundUser = from users in _context.Users
-                            where (users.Email == user.Email
-                            || users.UserName == user.UserName)
-                            && users.Password == hashedPassword
-                            && users.IsDeleted==false
-                            select users;
-            if(!foundUser.Any())
-            {
-                return BadRequest("Invalid login attempt");
-            }
-            else
-            {
-                return await BuildToken(user);
-            }
+            string hashedPassword = hashHelper.GetHash(credentials.Password);
+            var user = _context.Users.SingleOrDefault(x=> x.IsDeleted == false 
+            && x.Password == hashedPassword
+            &&(x.Email==credentials.NameEmail|| x.UserName == credentials.NameEmail));
+            if (user == null) return BadRequest("Invalid login attempt");
+            else return await BuildToken(user);
+            
+
+
+        }
+        //[HttpPost("login")]
+        //public async Task<ActionResult<UserToken>> Login([FromBody] User user)
+        //{
+        //    //fa doar cu username sau doar cu email
+        //    HashHelper hashHelper = new HashHelper();
+        //    string hashedPassword = hashHelper.GetHash(user.Password);
+        //    var foundUser = from users in _context.Users
+        //                    where (users.Email == user.Email
+        //                    || users.UserName == user.UserName)
+        //                    && users.Password == hashedPassword
+        //                    && users.IsDeleted==false
+        //                    select users;
+        //    if(!foundUser.Any())
+        //    {
+        //        return BadRequest("Invalid login attempt");
+        //    }
+        //    else
+        //    {
+        //        return await BuildToken(user);
+        //    }
 
             
-        }
+        //}
         private async Task<UserToken> BuildToken(User user)
         {
             var claims = new List<Claim>()

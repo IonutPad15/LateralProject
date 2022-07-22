@@ -28,9 +28,12 @@ namespace Models.Response
         {
             StringBuilder post = new StringBuilder();
             post.Append(ToString());
-            foreach (var comm in Comments)
+            if (Comments != null)
             {
-                post.Append(comm.ToString());
+                foreach (var comm in Comments)
+                {
+                    post.Append(comm.ToString());
+                }
             }
             return post.ToString();
         }
