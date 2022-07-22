@@ -179,7 +179,7 @@ catch (Exception e)
 {
     Console.WriteLine(e);
 }*/
-User credentials3 = new User()
+UserRequest credentials3 = new UserRequest()
 {
     //Email = "ioan@ererf.comm",
     Email = "isdark23@yahoo.com",
@@ -372,7 +372,7 @@ string urlComments = "https://localhost:7083" + "/api/comment";
 //    response2 = await client.GetAsync("api/user");
 //    if (response2.IsSuccessStatusCode)
 //    {
-//        var users = await response2.Content.ReadFromJsonAsync<IEnumerable<User>>();
+//        var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
 //        foreach (var user in users)
 //        {
 //            Console.WriteLine(user.ToString());

@@ -1,0 +1,35 @@
+﻿@using Models.Response
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+   @model IEnumerable<UserInfo>
+   <table class="table">
+    <tr>
+         <th>
+            @Html.DisplayNameFor(model => model.Id)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.UserName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Email)
+        </th>
+    </tr>
+   @foreach(var item in Model)
+    {
+    <tr>
+        <td> 
+            @Html.DisplayFor(modelItem => item.Id )
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem =>item.UserName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem =>item.Email)
+        </td>
+    </tr>  
+    }
+    
+    </table>
+}
