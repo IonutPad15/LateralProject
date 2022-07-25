@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Models.Response;
+using System.Net.Http.Headers;
+using TheForestManMVC.Utils;
 
 namespace TheForestManMVC.Controllers
 {
@@ -8,10 +11,26 @@ namespace TheForestManMVC.Controllers
         {
             return View();
         }
-        [HttpGet]
-        public ActionResult CommentsByPostId( Guid id)
+        private async Task<PostInfo> GetAllComments(Guid id)
         {
-            return View();
+            PostInfo postInfo = new PostInfo();
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/post/{id}/comments");
+                if (response.IsSuccessStatusCode)
+                {
+                    var post = await response.Content.ReadFromJsonAsync<PostInfo>();
+
+                    return post;
+                }
+            }
+            return postInfo;
+        }
+        public async Task<ActionResult> CommentsByPostId( Guid id)
+        {
+            PostInfo post = await GetAllComments(id);
+            return View(post);
         }
     }
 }

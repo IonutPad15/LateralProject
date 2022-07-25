@@ -1,14 +1,37 @@
 ﻿@using Models.Response
+@using TheForestManMVC.Controllers
 @{
     ViewData["Title"] = "Home Page";
 }
-
+@if(UserController.token!= null)
+{
+    <div class="row">
+    <div class="col-md-4">
+        <form asp-controller="Home" asp-action="CreatePost">
+            
+            <div class="input-group">
+                <input type="text" placeholder='"(Create Post-Title)")' name="postTitle" class="form-control" required >
+                <input type="text" placeholder='"(Create Post-Body)")' name="postBody" class="form-control" required >
+                <span class="input-group-btn">
+                    <input type="submit" value="Post" class="btn btn-primary" />
+                </span>
+            </div>
+            
+            
+            <div class="form-group">
+                @Html.Label((string)ViewBag.ErrorUser)
+                
+            </div>
+        </form>
+    </div>
+</div>
+}
 @{
     @model IEnumerable<PostInfo>
     <table class="table">
             <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.Id)
+                    @Html.DisplayNameFor(model => model.Author)
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.Title)
@@ -17,14 +40,14 @@
                     @Html.DisplayNameFor(model => model.Body)
                 </th>
                  <th>
-                    @Html.Display("Comments")
+                   @Html.Label("Comments:")
                 </th>
             </tr>
            @foreach(var item in Model)
     {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem =>item.Id)
+                    @Html.DisplayFor(modelItem =>item.Author)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem =>item.Title)

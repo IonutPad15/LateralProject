@@ -40,6 +40,7 @@ namespace API.Controllers
                                 Title = post.Title,
                             };
             int i = 0;
+            
             List<PostInfo> postsInfo = await postinfos.ToListAsync<PostInfo>();
             foreach(Post post in posts)
             {
@@ -58,8 +59,12 @@ namespace API.Controllers
                         postsInfo[i].Comments.Add(comm);
                     }
                 }
+                postsInfo[i].Comments= postsInfo[i].Comments.OrderBy(p => p.Updated).ToList<CommentInfo>();
+                postsInfo[i].Comments.Reverse();
                 i++;
             }
+            postsInfo = postsInfo.OrderBy(x => x.Updated).ToList<PostInfo>();
+            postsInfo.Reverse();
             //List<PostInfo> posts = await postinfos.ToListAsync<PostInfo>();
             if (postAmount < 0)
                 return postsInfo;
@@ -94,6 +99,7 @@ namespace API.Controllers
         {
             //var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
             var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id && x.IsDeleted == false);
+            posttester.Comments.RemoveAll(c => c.IsDeleted == true);
             PostInfo postcomments = new PostInfo()
             {
                 Author = posttester.Author,
@@ -103,18 +109,21 @@ namespace API.Controllers
                 Title = posttester.Title,
                 Updated = posttester.Updated,
             };
-                foreach (var comment in postcomments.Comments)
-            {
-                CommentInfo commentinfo = new CommentInfo()
+                foreach (var comment in posttester.Comments)
                 {
-                    Author = comment.Author,
-                    Body = comment.Body,
-                    Created = comment.Created,
-                    Updated = comment.Updated,
-                    Id = comment.Id
-                };
-                postcomments.Comments.Add(commentinfo);
-            }
+                    CommentInfo commentinfo = new CommentInfo()
+                    {
+                        Author = comment.Author,
+                        Body = comment.CommentBody,
+                        Created = comment.Created,
+                        Updated = comment.Updated,
+                        Id = comment.Id
+                    };
+                
+                    postcomments.Comments.Add(commentinfo);
+                }
+            postcomments.Comments = postcomments.Comments.OrderBy(c => c.Updated).ToList<CommentInfo>();
+            postcomments.Comments.Reverse();
             return posttester == null ? NotFound() : Ok(postcomments);
 
         }

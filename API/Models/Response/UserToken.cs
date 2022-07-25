@@ -10,5 +10,6 @@ namespace Models.Response
     {
         public string Token { get; set; }
         public DateTime ExpirationDate { get; set; }
+        public Guid UserId { get; set; }
     }
 }

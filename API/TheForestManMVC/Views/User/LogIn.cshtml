@@ -1,0 +1,40 @@
+﻿@model Models.Request.Credentials
+
+@{
+    ViewData["Title"] = "LogIn";
+}
+
+<h1>LogIn</h1>
+
+<h4>Credentials</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-controller="User" asp-action="LogInAction">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="NameEmail" class="control-label" ></label>
+                <input asp-for="NameEmail" class="form-control" placeholder="(Email or Usernanme)"/>
+               
+                <span asp-validation-for="NameEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                @Html.Label((string)ViewBag.ErrorUser)
+                
+            </div>
+            <div class="form-group">
+                <input type="submit" value="LogIn" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

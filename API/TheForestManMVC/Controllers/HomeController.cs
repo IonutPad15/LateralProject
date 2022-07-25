@@ -11,10 +11,13 @@ namespace TheForestManMVC.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         public static readonly string url = "http://localhost:5083/api";
+        public static readonly HttpClient client = new HttpClient();
 
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
+            client.BaseAddress = new Uri(url);
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
         private async Task<List<PostInfo>> GetAllPosts()
         {
@@ -22,6 +25,7 @@ namespace TheForestManMVC.Controllers
             using (HttpClient client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                
                 HttpResponseMessage response = await client.GetAsync($"{url}/post");
                 if (response.IsSuccessStatusCode)
                 {
@@ -37,7 +41,22 @@ namespace TheForestManMVC.Controllers
             List<PostInfo> postsInfo = await GetAllPosts();
             return View(postsInfo);
         }
-
+        public async Task<ActionResult> CreatePost(string postTitle, string postBody)
+        {
+            using(HttpClient client = new HttpClient())
+            {
+                //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                    UserController.token.Token);
+                PostRequest postRequest = new PostRequest()
+                {
+                    Body = postBody,
+                    Title = postTitle
+                };
+                HttpResponseMessage response = await client.PostAsJsonAsync($"{url}/post", postRequest);
+                return Content("");
+            }
+        }
         public IActionResult Privacy()
         {
             return View();
@@ -48,5 +67,6 @@ namespace TheForestManMVC.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
     }
 }

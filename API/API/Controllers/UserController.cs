@@ -56,6 +56,7 @@ namespace API.Controllers
             var usertester = _context.Users.Include(x => x.Posts)
                                            .ThenInclude(x => x.Comments)
                                            .Single(x => x.Id == id &&x.IsDeleted == false);
+            
             UserPostsCommentsInfo userpostinfo = new UserPostsCommentsInfo()
             {
                 UserName = usertester.UserName,
@@ -65,31 +66,42 @@ namespace API.Controllers
             };
             foreach(var post in usertester.Posts)
             {
-                PostInfo postInfo = new PostInfo()
+                if (post.IsDeleted == false)
                 {
-                    Id = post.Id,
-                    Created = post.Created,
-                    Author = post.Author,
-                    Body = post.Description,
-                    Title = post.Title,
-                    Updated = post.Updated
-                };
-                userpostinfo.Posts.Add(postInfo);
+                    PostInfo postInfo = new PostInfo()
+                    {
+                        Id = post.Id,
+                        Created = post.Created,
+                        Author = post.Author,
+                        Body = post.Description,
+                        Title = post.Title,
+                        Updated = post.Updated
+                    };
+                    userpostinfo.Posts.Add(postInfo);
+                }
             }
+            userpostinfo.Posts = userpostinfo.Posts.OrderBy(p => p.Updated).ToList<PostInfo>();
+            userpostinfo.Posts.Reverse();
             foreach (var comment in usertester.Comments)
             {
-                CommentInfo commentInfo = new CommentInfo()
+                if (comment.IsDeleted == false)
                 {
-                    Id = comment.Id,
-                    Created = comment.Created,
-                    Author = comment.Author,
-                    Body = comment.CommentBody,
-                    
-                    Updated = comment.Updated
-                    
-                };
-                userpostinfo.Comments.Add(commentInfo);
+                    CommentInfo commentInfo = new CommentInfo()
+                    {
+                        Id = comment.Id,
+                        Created = comment.Created,
+                        Author = comment.Author,
+                        Body = comment.CommentBody,
+
+                        Updated = comment.Updated
+
+                    };
+
+                    userpostinfo.Comments.Add(commentInfo);
+                }
             }
+            userpostinfo.Comments = userpostinfo.Comments.OrderBy(p => p.Updated).ToList<CommentInfo>();
+            userpostinfo.Comments.Reverse();
             return user == null ? NotFound() : Ok(userpostinfo);
 
         }
@@ -449,7 +461,8 @@ namespace API.Controllers
             return new UserToken()
             {
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
-                ExpirationDate = expiration
+                ExpirationDate = expiration,
+                UserId = user.Id
             };
 
         }

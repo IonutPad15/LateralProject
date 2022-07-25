@@ -1,0 +1,88 @@
+﻿@model Models.Response.PostInfo
+
+@{
+    ViewData["Title"] = "CommentsByPostId";
+}
+
+<h1>CommentsByPostId</h1>
+
+<table>
+    <h4>PostInfo</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Title)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Title)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Author)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Author)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Body)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Body)
+        </dd>
+        
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Created)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Created)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Updated)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Updated)
+        </dd>
+        <dt class = "col-sm-2">
+        @Html.Label("Comments:")
+        </dt>
+        <dd>
+        <table class="table">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Comments[0].Author)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Comments[0].Body)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Comments[0].Created)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Comments[0].Updated)
+                </th>
+            </tr>
+            @for(int i=0;i<Model.Comments.Count;++i)
+            {
+                <tr>
+                <td>
+                    @Html.DisplayFor(model => model.Comments[i].Author)
+                </td>
+                   
+                <td>
+                    @Html.DisplayFor(model => model.Comments[i].Body)
+                </td>
+                <td> 
+                    @Html.DisplayFor(model => model.Comments[i].Created)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.Comments[i].Updated)
+                </td>
+                </tr>
+            }
+        </table>
+        </dd>
+    </dl>
+</div>
+<div>
+    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    <a asp-action="Index">Back to List</a>
+</div>
