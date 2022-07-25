@@ -10,21 +10,24 @@ namespace TheForestManMVC.Controllers
 {
     public class UserController : Controller
     {
-       
-        string url = "http://localhost:5083/api";
-        public async Task<IActionResult> Index()
+        private static UserModel Credentials = new UserModel();
+
+        
+        public async Task<ActionResult> Index()
         {
+           
             List<UserInfo> users = await GetAllUsers();
             return View(users);
+            Credentials = new UserModel();
         }
         
-        public async Task<List<UserInfo>> GetAllUsers()
+        private async Task<List<UserInfo>> GetAllUsers()
         {
             List<UserInfo> userInfos = new List<UserInfo>();
             using (HttpClient client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                HttpResponseMessage response = await client.GetAsync($"{url}/user");
+                HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user");
                 if (response.IsSuccessStatusCode)
                 {
                     var users = await response.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
@@ -37,66 +40,72 @@ namespace TheForestManMVC.Controllers
             }
             return userInfos;
         }
-        //[HttpPost]
-        //public ActionResult Create(string userName, string email, string password, string repeatPassword)
-        //{
-        //    if(!password.Equals(repeatPassword)) return View("../Home/Index");
-        //    UserModel userModel = new UserModel()
-        //    {
-        //        UserName = userName,
-        //        Email = email,
-        //        Password = password
-        //    };
-        //    {
-        //        Console.WriteLine("\n\n\n\n");
-        //        Console.WriteLine(userModel.UserName + userModel.Email + userModel.Password);
-        //        Console.WriteLine("\n\n\n\n");
-        //    }
-        //    return View(userModel);
-        //}
-        //[HttpPost]
-        //public ActionResult Create(string UserName, string Email, string Password, string RepeatPassword)
-        //{
-
-        //    UserModel userModel = new UserModel()
-        //    {
-        //        UserName = UserName,
-        //        Email = Email,
-        //        Password = Password
-        //    };
-        //    {
-        //        Console.WriteLine("\n\n\n\n");
-        //        Console.WriteLine(userModel.UserName + userModel.Email + userModel.Password);
-        //        Console.WriteLine("\n\n\n\n");
-        //    }
-        //    return View(userModel);
-        //}
         [HttpPost]
-        public async Task<ActionResult> Create(RegisterModel registerModel)
+        public async Task<ActionResult> Register(string code)
         {
-
-            UserModel userModel = new UserModel()
+            ValidationCode coderead = new ValidationCode()
             {
-                UserName = registerModel.UserName,
-                Email = registerModel.Email,
-                Password = registerModel.Password
+                Code = code,
+                Created = DateTime.Now
             };
+            UserCode userCode = new UserCode()
             {
-                Console.WriteLine("\n\n\n\n");
-                Console.WriteLine(userModel.UserName + userModel.Email + userModel.Password);
-                Console.WriteLine("\n\n\n\n");
-            }
+                Email = Credentials.Email,
+                Password = Credentials.Password,
+                UserName = Credentials.UserName,
+                Code = coderead
+            };
             using (HttpClient client = new HttpClient())
             {
-                UserModel credentials = new UserModel();
-                var respuesta = await client.GetAsync($"{url}/user/registercode?username={userModel.UserName}&&email={userModel.Email}");
-                if (respuesta.StatusCode == HttpStatusCode.InternalServerError)
+                var respueste = await client.PostAsJsonAsync($"{HomeController.url}/user/create", userCode);
+                if (respueste.IsSuccessStatusCode)
+                    return RedirectToAction("Index", "User");
+                else
                 {
-                    respuesta.EnsureSuccessStatusCode();
+                    ViewBag.ErrorUser = "A aparut o eroare";
+                    return View("GetRegisterCode");
                 }
-                return View(respuesta);
+                
+                
             }
-            return View(userModel);
+            
+        }
+        private async Task<bool> GetCode()
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var respuesta = await client.GetAsync($"{HomeController.url}/user/registercode?username={Credentials.UserName}&&email={Credentials.Email}");
+
+                if (respuesta.IsSuccessStatusCode)
+                    return true;
+               return false;
+
+            }
+        }
+        public async Task<ActionResult> ResendCode()
+        {
+            var code = await GetCode();
+            if(!code)
+            {
+                ViewBag.ErrorUser = "A aparut o eroare";
+            }
+            return View("GetRegisterCode");
+            
+        }
+        [HttpPost]
+        public async Task<ActionResult> GetRegisterCode(RegisterModel registerModel)
+        {
+            Credentials.UserName = registerModel.UserName;
+            Credentials.Email = registerModel.Email;
+            Credentials.Password = registerModel.Password;
+
+            var code = await GetCode();
+            if(code == false)
+            {
+                ViewBag.ErrorCreateUser = "There is an account with this username/email or the password is too short";
+                return View("CreateUser");
+            }
+            return View();
         }
 
         public async Task<IActionResult> CreateUser()

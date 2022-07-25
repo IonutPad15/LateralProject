@@ -1,8 +1,46 @@
-﻿@{
+﻿@using Models.Response
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@{
+    @model IEnumerable<PostInfo>
+    <table class="table">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Id)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Title)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Body)
+                </th>
+                 <th>
+                    @Html.Display("Comments")
+                </th>
+            </tr>
+           @foreach(var item in Model)
+    {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem =>item.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem =>item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem =>item.Body)
+                </td>
+                <td>
+                    
+                    
+                    @Html.ActionLink($"{item.Comments.Count}","CommentsByPostId","Comment",new{
+                    @id = @item.Id}, null);
+                </td>
+            </tr>  
+    }
+            
+    </table>
+}
+

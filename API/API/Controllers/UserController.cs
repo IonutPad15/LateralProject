@@ -129,7 +129,9 @@ namespace API.Controllers
                     Code = verif,
                     Created = DateTime.Now
                 };
-                userCodes.Add(username, code);
+                if (userCodes.ContainsKey(username))
+                    userCodes[username] = code;
+                else userCodes.Add(username, code);
                 return ResultCode.ValidAdress;
             }
             
