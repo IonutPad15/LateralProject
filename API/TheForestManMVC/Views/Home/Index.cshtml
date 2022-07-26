@@ -62,6 +62,17 @@
                             @Html.ActionLink($"{item.Comments.Count}","CommentsByPostId","Comment",new{
                     @id = @item.Id}, null);
                         </td>
+                        <td>
+                        
+                    @if(UserController.token!=null && @item.UserId!=null)
+                    @if(UserController.token.UserId == @item.UserId)
+                {
+                    <div>
+                        @Html.ActionLink("Edit", "Edit", new { @id = @item.Id,@body=@item.Body}) |
+                        @Html.ActionLink("Delete", "Delete", new { @id = @item.Id,@body= @item.Body })
+                    </div>
+                }
+                        </td>
                     </tr>  
     }
                     

@@ -124,7 +124,8 @@ namespace API.Controllers
                         Created = comment.Created,
                         Updated = comment.Updated,
                         Id = comment.Id,
-                        UserId = comment.UserId
+                        UserId = comment.UserId,
+                        PostId = comment.PostId
                     };
                 
                     postcomments.Comments.Add(commentinfo);

@@ -47,6 +47,14 @@
         <dd>
             <div class="row">
                 <div class="col-md-4">
+                    @if (UserController.token != null && Model.UserId!=null)
+                    @if(UserController.token.UserId == Model.UserId)
+                {
+                    <div>
+                        @Html.ActionLink("Edit", "Edit","Home", new { @id = Model.Id,@body=Model.Body}) |
+                        @Html.ActionLink("Delete", "Delete","Home", new { @id = Model.Id,@body= Model.Body })
+                    </div>
+                }
                     <form asp-controller="Comment" asp-action="CreateComment">
                         <p><h1>Add a comment</h1></p>
                         @if(UserController.token!=null)
@@ -113,8 +121,8 @@
                     @if(UserController.token.UserId == Model.Comments[i].UserId)
                 {
                     <div>
-                    @Html.ActionLink("Edit", "Edit", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body}) |
-                    @Html.ActionLink("Delete", "Delete", new { /* id = Model.PrimaryKey */ })
+                    @Html.ActionLink("Edit", "Edit", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body,@postId=@Model.Id}) |
+                    @Html.ActionLink("Delete", "Delete", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body })
                     </div>
                 }
                 </td>

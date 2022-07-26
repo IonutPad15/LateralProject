@@ -20,6 +20,24 @@ namespace API.Controllers
         {
             _context = context;
         }
+        [HttpGet("{id}")]
+        public async Task<ActionResult> GetCommentById(Guid id)
+        {
+            var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted == false);
+            CommentInfo commentInfo = new CommentInfo()
+            {
+                Id = comment.Id,
+                Created = comment.Created,
+                Updated = comment.Updated,
+                UserId = comment.UserId,
+                Author = comment.Author,
+                Body = comment.CommentBody,
+                PostId = comment.PostId
+
+            };
+            return comment == null ? NotFound() : Ok(commentInfo);
+
+        }
         [HttpGet]
         public async Task<IEnumerable<CommentInfo>> GetComments()
         {

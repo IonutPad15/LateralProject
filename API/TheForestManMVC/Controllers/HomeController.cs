@@ -4,6 +4,7 @@ using TheForestManMVC.Models;
 using Models.Request;
 using Models.Response;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace TheForestManMVC.Controllers
 {
@@ -11,13 +12,11 @@ namespace TheForestManMVC.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         public static readonly string url = "https://localhost:7083/api";
-        public static readonly HttpClient client = new HttpClient();
 
+        private static Guid postId;
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
-            client.BaseAddress = new Uri(url);
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
         private async Task<List<PostInfo>> GetAllPosts()
         {
@@ -55,8 +54,54 @@ namespace TheForestManMVC.Controllers
                     Title = postTitle
                 };
                 HttpResponseMessage response = await client.PostAsJsonAsync($"{url}/post", postRequest);
-                return Content("");
+                return RedirectToAction("Index");
             }
+        }
+        public async Task<ActionResult> EditPost(Guid id, string body)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                    UserController.token.Token);
+                
+                HttpResponseMessage response = await client.PutAsJsonAsync($"{url}/post/{id}", body);
+                return RedirectToAction("Index");
+            }
+        }
+        public async Task<ActionResult> DeletePost(PostInfo postInfo)
+        {
+            return Content("");
+        }
+        public async Task<ActionResult> Delete(Guid id)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                 UserController.token.Token);
+                HttpResponseMessage postResponse = await client.GetAsync($"{HomeController.url}/post/{id}");
+
+                if (postResponse.IsSuccessStatusCode)
+                {
+
+                    var response = await postResponse.Content.ReadAsStringAsync();
+                    PostInfo postInfo = JsonSerializer.Deserialize<PostInfo>(response,
+                            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+                    return View(postInfo);
+                }
+            }
+            return View();
+        }
+        public ActionResult Edit(Guid id, string body)
+        {
+            PostInfo post = new PostInfo()
+            {
+                Id = id,
+                Body = body
+            };
+            return View(post);
         }
         public IActionResult Privacy()
         {

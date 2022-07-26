@@ -59,6 +59,12 @@
                     @Html.ActionLink($"{item.Comments.Count}","CommentsByPostId","Comment",new{
                     @id = @item.Id}, null);
                 </td>
+                <td>
+                    <div>
+                        @Html.ActionLink("Edit", "Edit","Home", new { @id = @item.Id,@body=@item.Body}) |
+                        @Html.ActionLink("Delete", "Delete","Home", new { @id = @item.Id,@body= @item.Body })
+                    </div>
+                </td>
             </tr>  
     }
         <table class="table">
@@ -92,7 +98,14 @@
                 <td>
                     @Html.DisplayFor(model => model.Comments[i].Updated)
                 </td>
+                <td>
+                <div>
+                    @Html.ActionLink("Edit", "Edit","Comment", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body,@userId=@Model.Id}) |
+                    @Html.ActionLink("Delete", "Delete","Comment", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body })
+                    </div>
+                </td> 
                 </tr>
+
             }
         </table>
 </div>

@@ -32,17 +32,18 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IEnumerable<UserInfo>> GetUsers()
         {
-           
-            var usersinfo = from users in _context.Users
-                            where users.IsDeleted == false
-                            select new UserInfo()
-                            {
-                                Id = users.Id,
-                                UserName = users.UserName,
-                                Email = users.Email
-                            };
-            List<UserInfo> userInfos = await usersinfo.ToListAsync<UserInfo>();
-            return userInfos;
+            
+                var usersinfo = from users in _context.Users
+                                where users.IsDeleted == false
+                                select new UserInfo()
+                                {
+                                    Id = users.Id,
+                                    UserName = users.UserName,
+                                    Email = users.Email
+                                };
+                List<UserInfo> userInfos = await usersinfo.ToListAsync<UserInfo>();
+                return userInfos;
+            
         }
 
 
@@ -56,7 +57,8 @@ namespace API.Controllers
             var usertester = _context.Users.Include(x => x.Posts)
                                            .ThenInclude(x => x.Comments)
                                            .Single(x => x.Id == id &&x.IsDeleted == false);
-            
+            var usercomments = _context.Users.Include(x => x.Comments)
+                                                .Single(x => x.Id == id && x.IsDeleted == false);
             UserPostsCommentsInfo userpostinfo = new UserPostsCommentsInfo()
             {
                 UserName = usertester.UserName,
@@ -96,6 +98,7 @@ namespace API.Controllers
 
                         Updated = comment.Updated
                         ,UserId =comment.UserId
+                        ,PostId = comment.PostId
 
                     };
 
