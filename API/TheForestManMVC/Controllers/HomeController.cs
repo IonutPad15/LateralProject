@@ -10,7 +10,7 @@ namespace TheForestManMVC.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        public static readonly string url = "http://localhost:5083/api";
+        public static readonly string url = "https://localhost:7083/api";
         public static readonly HttpClient client = new HttpClient();
 
         public HomeController(ILogger<HomeController> logger)
@@ -41,11 +41,12 @@ namespace TheForestManMVC.Controllers
             List<PostInfo> postsInfo = await GetAllPosts();
             return View(postsInfo);
         }
+        [HttpPost]
         public async Task<ActionResult> CreatePost(string postTitle, string postBody)
         {
             using(HttpClient client = new HttpClient())
             {
-                //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
                     UserController.token.Token);
                 PostRequest postRequest = new PostRequest()

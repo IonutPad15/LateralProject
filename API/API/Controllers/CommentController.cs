@@ -47,7 +47,8 @@ namespace API.Controllers
                                Id = comment.Id,
                                Updated = comment.Updated,
                                Author = comment.Author,
-                               Body = comment.CommentBody
+                               Body = comment.CommentBody,
+                               UserId = comment.UserId
                            };
             return comments;
             List<CommentInfo> commentInfos = await comments.ToListAsync<CommentInfo>();

@@ -29,41 +29,42 @@
 @{
     @model IEnumerable<PostInfo>
     <table class="table">
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Author)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Title)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Body)
-                </th>
-                 <th>
-                   @Html.Label("Comments:")
-                </th>
-            </tr>
-           @foreach(var item in Model)
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Author)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Title)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.Body)
+                        </th>
+                         <th>
+                           @Html.Label("Comments:")
+                        </th>
+                    </tr>
+                   @foreach(var item in Model)
     {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem =>item.Author)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem =>item.Title)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem =>item.Body)
-                </td>
-                <td>
-                    
-                    
-                    @Html.ActionLink($"{item.Comments.Count}","CommentsByPostId","Comment",new{
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem =>item.Author)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem =>item.Title)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem =>item.Body)
+                        </td>
+                        
+                        <td>
+                            
+                            
+                            @Html.ActionLink($"{item.Comments.Count}","CommentsByPostId","Comment",new{
                     @id = @item.Id}, null);
-                </td>
-            </tr>  
+                        </td>
+                    </tr>  
     }
-            
+                    
     </table>
 }
 

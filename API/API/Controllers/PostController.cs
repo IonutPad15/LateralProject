@@ -38,6 +38,8 @@ namespace API.Controllers
                                 Created = post.Created,
                                 Updated = post.Updated,
                                 Title = post.Title,
+                                UserId = post.UserId,
+                                
                             };
             int i = 0;
             
@@ -54,7 +56,8 @@ namespace API.Controllers
                             Created = comment.Created,
                             Updated = comment.Updated,
                             Author = comment.Author,
-                            Body = comment.CommentBody
+                            Body = comment.CommentBody,
+                            UserId = comment.UserId
                         };
                         postsInfo[i].Comments.Add(comm);
                     }
@@ -86,7 +89,9 @@ namespace API.Controllers
                 Created = post.Created,
                 Id = id,
                 Title = post.Title,
-                Updated = post.Updated
+                Updated = post.Updated,
+                UserId = post.UserId
+                
 
             };
             return post == null ? NotFound() : Ok(postInfo);
@@ -108,6 +113,7 @@ namespace API.Controllers
                 Created = posttester.Created,
                 Title = posttester.Title,
                 Updated = posttester.Updated,
+                UserId =posttester.UserId
             };
                 foreach (var comment in posttester.Comments)
                 {
@@ -117,7 +123,8 @@ namespace API.Controllers
                         Body = comment.CommentBody,
                         Created = comment.Created,
                         Updated = comment.Updated,
-                        Id = comment.Id
+                        Id = comment.Id,
+                        UserId = comment.UserId
                     };
                 
                     postcomments.Comments.Add(commentinfo);

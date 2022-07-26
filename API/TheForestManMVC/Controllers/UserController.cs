@@ -116,7 +116,10 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                
                 HttpResponseMessage httpResponseToken = await client.PostAsJsonAsync($"{HomeController.url}/user/login", credentials);
                 if(httpResponseToken.StatusCode == HttpStatusCode.BadRequest)
                 {
@@ -126,9 +129,14 @@ namespace TheForestManMVC.Controllers
                 var responseToken = JsonSerializer.Deserialize<UserToken>(await
                     httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
                 token = responseToken;
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    responseToken.Token);
-
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token.Token);
+                //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( token.Token);
+                //PostRequest postRequest = new PostRequest()
+                //{
+                //    Body = "Body",
+                //    Title = "title"
+                //};
+                //HttpResponseMessage response = await client.PostAsJsonAsync($"{HomeController.url}/post", postRequest);
                 return RedirectToAction("Index", "Home");
             }
         }

@@ -18,6 +18,7 @@ namespace Models.Response
         public string Author { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
+        public Guid? UserId { get; set; }
         public List<CommentInfo> Comments { get; set; }
         public string ToString()
         {

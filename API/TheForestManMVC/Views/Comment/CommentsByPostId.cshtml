@@ -1,4 +1,5 @@
-﻿@model Models.Response.PostInfo
+﻿@using TheForestManMVC.Controllers
+@model Models.Response.PostInfo
 
 @{
     ViewData["Title"] = "CommentsByPostId";
@@ -10,18 +11,19 @@
     <h4>PostInfo</h4>
     <hr />
     <dl class="row">
+         <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Author)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Author)
+        </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Title)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Title)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Author)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Author)
-        </dd>
+       
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Body)
         </dt>
@@ -41,10 +43,36 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Updated)
         </dd>
-        <dt class = "col-sm-2">
-        @Html.Label("Comments:")
-        </dt>
+       
         <dd>
+            <div class="row">
+                <div class="col-md-4">
+                    <form asp-controller="Comment" asp-action="CreateComment">
+                        <p><h1>Add a comment</h1></p>
+                        @if(UserController.token!=null)
+                        {
+                            <input type="radio" name="isAnonyme" value="Anonyme" id="anonyme" />
+                            <label for="anonyme"> Comment as Anonyme</label><br>
+                        }
+                        <div class="input-group">
+                            
+                            <input type="text" placeholder='"(Comment)")' name="commentBody" class="form-control" required >
+                            <span class="input-group-btn">
+                            <input type="submit" value="Post" class="btn btn-primary" />
+                        </span>
+                        </div>
+            
+            
+                        <div class="form-group">
+                        @Html.Label((string)ViewBag.ErrorUser)
+                
+                        </div>
+                    </form>
+                </div>
+            </div>
+        <dt class = "col-sm-2">
+            @Html.Label("Comments:")
+        </dt>
         <table class="table">
             <tr>
                 <th>
@@ -59,12 +87,16 @@
                 <th>
                     @Html.DisplayNameFor(model => model.Comments[0].Updated)
                 </th>
+                <th>
+
+                </th>
             </tr>
             @for(int i=0;i<Model.Comments.Count;++i)
             {
                 <tr>
                 <td>
                     @Html.DisplayFor(model => model.Comments[i].Author)
+
                 </td>
                    
                 <td>
@@ -76,6 +108,17 @@
                 <td>
                     @Html.DisplayFor(model => model.Comments[i].Updated)
                 </td>
+                <td>
+                    @if(UserController.token!=null && Model.Comments[i].UserId!=null)
+                    @if(UserController.token.UserId == Model.Comments[i].UserId)
+                {
+                    <div>
+                    @Html.ActionLink("Edit", "Edit", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body}) |
+                    @Html.ActionLink("Delete", "Delete", new { /* id = Model.PrimaryKey */ })
+                    </div>
+                }
+                </td>
+                
                 </tr>
             }
         </table>

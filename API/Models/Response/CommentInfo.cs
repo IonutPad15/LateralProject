@@ -13,6 +13,7 @@ namespace Models.Response
         public string Body { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
+        public Guid? UserId { get; set; }
         public string ToString()
         {
             string comm = "      Author:" + Author + "\n      Comment:" + Body + "\n";

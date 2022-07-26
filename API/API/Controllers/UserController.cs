@@ -75,7 +75,8 @@ namespace API.Controllers
                         Author = post.Author,
                         Body = post.Description,
                         Title = post.Title,
-                        Updated = post.Updated
+                        Updated = post.Updated, 
+                        UserId=post.UserId
                     };
                     userpostinfo.Posts.Add(postInfo);
                 }
@@ -94,6 +95,7 @@ namespace API.Controllers
                         Body = comment.CommentBody,
 
                         Updated = comment.Updated
+                        ,UserId =comment.UserId
 
                     };
 
