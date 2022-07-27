@@ -63,7 +63,7 @@
                     
                     
                     @Html.ActionLink($"{item.Comments.Count}","CommentsByPostId","Comment",new{
-                    @id = @item.Id}, null);
+                    @id = @item.Id}, null)
                 </td>
                 <td>
                     @if (UserController.token != null)
