@@ -27,19 +27,27 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">Users</a>
                         </li>
-                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="CreateUser">Create account</a>
-                        </li>
-                        <li class="nav-item">
+                        
+                        
                             @if (UserController.token == null)
                             {
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="LogIn">Log in</a>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="LogIn">Log in</a>
+                                </li>
+                                 <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="CreateUser">Create account</a>
+                                </li>
                             }
                             else
                             {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="LogOut">Log out</a>
+                                </li>
+                                <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="AboutUser">Profile</a>
+                                </li>
                             }
-                        </li>
+                        
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>

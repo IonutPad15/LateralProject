@@ -7,8 +7,14 @@
 <h1>AboutUser</h1>
 
 <div>
-    <h4>UserPostsCommentsInfo</h4>
+    <h4>Here is the user Activity</h4>
     <hr />
+    <h5>
+         <div>
+             @Html.ActionLink("ChangePassword", "Edit","User") |
+             @Html.ActionLink("DeleteAccount", "Delete","User")
+         </div>
+    </h5>
     <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Id)

@@ -45,6 +45,25 @@ namespace API.Controllers
                 return userInfos;
             
         }
+        [HttpGet("{id}")]
+        public async Task<UserInfo> GetUser(Guid id)
+        {
+
+            var usersinfo = from users in _context.Users
+                            where users.IsDeleted == false
+                            && users.Id == id
+                            select new UserInfo()
+                            {
+                                Id = users.Id,
+                                UserName = users.UserName,
+                                Email = users.Email
+                            };
+            List<UserInfo> userInfos = await usersinfo.ToListAsync<UserInfo>();
+            UserInfo user = userInfos.SingleOrDefault();
+
+            return user;
+
+        }
 
 
         [HttpGet("{id}/postscomments")]
@@ -232,18 +251,50 @@ namespace API.Controllers
 
         }
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("newpasscode")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetNewPassCode([FromQuery] string username, [FromQuery] string email)
+        {
+            var userExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username && u.IsDeleted == false && u.Email == email);
+            if (userExists != null)
+            {
+                var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+                var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
+
+                if (userclaim != null)
+                {
+
+                    if (!userclaim.Value.Equals(userExists.UserName) || !emailclaim.Value.Equals(userExists.Email))
+                        return BadRequest("Not his account");
+                }
+                if (SendCode(username, email, "You want to change your password! ") == ResultCode.ValidAdress)
+                {
+                    return Ok(username);
+                }
+                else
+                {
+                    return BadRequest("Eroare");
+                }
+            }
+            else
+            {
+                return BadRequest("User not found");
+            }
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(Credentials user)
+        public async Task<IActionResult> Update([FromBody] UserCode userCode)
         {
             var userToUpdate = await _context.Users.FirstOrDefaultAsync(u =>
-                (u.UserName == user.NameEmail || u.Email == user.NameEmail) && u.IsDeleted == false);
+                (u.UserName == userCode.UserName &&  u.Email == userCode.Email) && u.IsDeleted == false);
             if (userToUpdate == null) return NotFound();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
 
-            if (userclaim != null)
+            if (userclaim != null && emailclaim!=null)
             {
                 
                 if (!userclaim.Value.Equals(userToUpdate.UserName) || !emailclaim.Value.Equals(userToUpdate.Email))
@@ -252,7 +303,7 @@ namespace API.Controllers
                 
                 if (userToUpdate == null) return NotFound();
                 HashHelper hashHelper = new HashHelper();
-                string hashedPassword = hashHelper.GetHash(user.Password);
+                string hashedPassword = hashHelper.GetHash(userCode.Password);
 
 
                 userToUpdate.Password = hashedPassword;
@@ -269,52 +320,24 @@ namespace API.Controllers
             //var userToUpdate = user;
             return NoContent();
         }
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        //[HttpPut]
-        //[ProducesResponseType(StatusCodes.Status204NoContent)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> Update(User user)
-        //{
-        //    var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
-        //    var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
-
-        //    if (userclaim != null)
-        //    {
-        //        if (!userclaim.Value.Equals(user.UserName))
-        //            return BadRequest("Not his account");
-        //        if (!emailclaim.Value.Equals(user.Email))
-        //            return BadRequest("Not his account");
-        //        var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName && u.IsDeleted==false);
-        //        if (userToUpdate == null) return NotFound();
-        //        HashHelper hashHelper = new HashHelper();
-        //        string hashedPassword = hashHelper.GetHash(user.Password);
-
-
-        //        userToUpdate.Password = hashedPassword;
-        //        _context.Entry(userToUpdate).State = EntityState.Modified;
-        //        await _context.SaveChangesAsync();
-        //        UserInfo userInfo = new UserInfo()
-        //        {
-        //            Id = user.Id,
-        //            Email = user.Email,
-        //            UserName = user.UserName
-        //        };
-        //        return Ok(userInfo);
-        //    }
-        //    //var userToUpdate = user;
-        //    return NoContent();
-        //}
-
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("deletecode")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetDeleteCode([FromQuery] string username, [FromQuery] string email)
         {
-            var usernameExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username &&u.IsDeleted==false);
-            if (usernameExists != null)
+            var userExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username &&u.IsDeleted==false &&u.Email == email);
+            if (userExists != null)
             {
-               
+                var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+                var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
+
+                if (userclaim != null)
+                {
+
+                    if (!userclaim.Value.Equals(userExists.UserName) || !emailclaim.Value.Equals(userExists.Email))
+                        return BadRequest("Not his account");
+                }
                 if (SendCode(username, email, "You want to delete your account! ") == ResultCode.ValidAdress)
                 {
                     return Ok(username);
@@ -360,6 +383,7 @@ namespace API.Controllers
                     {
 
                         var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false) ;
+                        var usercomments = _context.Users.Include(x=>x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false);
                         //usertester.Posts.Find(p => p.UserId == usertester.Id).Author = "[User Deleted]";
                         //_context.Entry(usertester.Posts).State = EntityState.Modified;
                         usertester.Posts.RemoveAll(p => p.IsDeleted == true);
@@ -416,29 +440,7 @@ namespace API.Controllers
 
 
         }
-        //[HttpPost("login")]
-        //public async Task<ActionResult<UserToken>> Login([FromBody] User user)
-        //{
-        //    //fa doar cu username sau doar cu email
-        //    HashHelper hashHelper = new HashHelper();
-        //    string hashedPassword = hashHelper.GetHash(user.Password);
-        //    var foundUser = from users in _context.Users
-        //                    where (users.Email == user.Email
-        //                    || users.UserName == user.UserName)
-        //                    && users.Password == hashedPassword
-        //                    && users.IsDeleted==false
-        //                    select users;
-        //    if(!foundUser.Any())
-        //    {
-        //        return BadRequest("Invalid login attempt");
-        //    }
-        //    else
-        //    {
-        //        return await BuildToken(user);
-        //    }
-
-            
-        //}
+        
         private async Task<UserToken> BuildToken(User user)
         {
             var claims = new List<Claim>()

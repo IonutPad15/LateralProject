@@ -5,6 +5,7 @@ using Models.Request;
 using Models.Response;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Net;
 
 namespace TheForestManMVC.Controllers
 {
@@ -69,9 +70,32 @@ namespace TheForestManMVC.Controllers
                 return RedirectToAction("Index");
             }
         }
+        public ActionResult Edit(Guid id, string body)
+        {
+            PostInfo post = new PostInfo()
+            {
+                Id = id,
+                Body = body
+            };
+            return View(post);
+        }
         public async Task<ActionResult> DeletePost(PostInfo postInfo)
         {
-            return Content("");
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                 UserController.token.Token);
+                HttpResponseMessage postResponse = await client.DeleteAsync($"{HomeController.url}/post/{postInfo.Id}");
+
+                if (postResponse.StatusCode == HttpStatusCode.NoContent)
+                {
+
+                    return RedirectToAction("Index");
+                }
+                else return Content("Something went wrong");
+            }
         }
         public async Task<ActionResult> Delete(Guid id)
         {
@@ -94,15 +118,7 @@ namespace TheForestManMVC.Controllers
             }
             return View();
         }
-        public ActionResult Edit(Guid id, string body)
-        {
-            PostInfo post = new PostInfo()
-            {
-                Id = id,
-                Body = body
-            };
-            return View(post);
-        }
+        
         public IActionResult Privacy()
         {
             return View();

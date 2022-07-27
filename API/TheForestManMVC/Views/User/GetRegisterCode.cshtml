@@ -14,7 +14,7 @@
                 <input type="text" placeholder='("Enter Code")' name="code" required>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Submit code" class="btn btn-primary" />
             </div>
             
         </form>
@@ -26,7 +26,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 @Html.Label((string)ViewBag.ErrorUser)
-                
+                <input type="text" value="registercode" name="type" readonly />
             </div>
             <div class="form-group">
                 <input type="submit" value="ResendCode" class="btn btn-primary" />
