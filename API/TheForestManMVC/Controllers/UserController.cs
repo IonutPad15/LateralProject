@@ -155,11 +155,19 @@ namespace TheForestManMVC.Controllers
                 return RedirectToAction("Index", "Home");
             }
         }
-        public async Task<ActionResult> AboutUser()
+        public async Task<ActionResult> AboutUser(Guid? id)
         {
             using (HttpClient client = new HttpClient())
             {
-                HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{token.UserId}/postscomments");
+                HttpResponseMessage response = new HttpResponseMessage();
+                if (id == null)
+                {
+                    response = await client.GetAsync($"{HomeController.url}/user/{token.UserId}/postscomments");
+                }
+                else
+                {
+                    response = await client.GetAsync($"{HomeController.url}/user/{id}/postscomments");
+                }
                 if (response.IsSuccessStatusCode)
                 {
                     var user3 = await response.Content.ReadFromJsonAsync<UserPostsCommentsInfo>();
@@ -168,6 +176,19 @@ namespace TheForestManMVC.Controllers
                 return Content("nu merge...");
             }
         }
+        //public async Task<ActionResult> AboutUser(Guid id)
+        //{
+        //    using (HttpClient client = new HttpClient())
+        //    {
+        //        HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{id}/postscomments");
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            var user3 = await response.Content.ReadFromJsonAsync<UserPostsCommentsInfo>();
+        //            return View(user3);
+        //        }
+        //        return Content("nu merge...");
+        //    }
+        //}
         public async Task<ActionResult> LogIn()
         {
             

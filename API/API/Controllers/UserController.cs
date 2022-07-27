@@ -85,10 +85,14 @@ namespace API.Controllers
                 Id = usertester.Id,
                 
             };
+            
+           
             foreach(var post in usertester.Posts)
             {
+                
                 if (post.IsDeleted == false)
                 {
+                    var comments = _context.Posts.Include(x => x.Comments).Single(x => x.Id == post.Id);
                     PostInfo postInfo = new PostInfo()
                     {
                         Id = post.Id,
@@ -99,6 +103,22 @@ namespace API.Controllers
                         Updated = post.Updated, 
                         UserId=post.UserId
                     };
+                    foreach(var comment in comments.Comments)
+                    {
+                        if (comment.IsDeleted == false)
+                        {
+                            CommentInfo comm = new CommentInfo()
+                            {
+                                Id = comment.Id,
+                                Created = comment.Created,
+                                Updated = comment.Updated,
+                                Author = comment.Author,
+                                Body = comment.CommentBody,
+                                UserId = comment.UserId
+                            };
+                            postInfo.Comments.Add(comm);
+                        }
+                    }
                     userpostinfo.Posts.Add(postInfo);
                 }
             }

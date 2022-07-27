@@ -47,7 +47,16 @@
     {
                     <tr>
                         <td>
-                            @Html.DisplayFor(modelItem =>item.Author)
+                            @if(!item.Author.Equals("[User Deleted]"))
+                            {
+                                @Html.ActionLink($"{item.Author}","AboutUser","User",new{
+                                    @id = @item.UserId}, null)
+                        
+                            }
+                            else
+                            {
+                                @Html.DisplayFor(modelItem =>item.Author)
+                            }
                         </td>
                         <td>
                             @Html.DisplayFor(modelItem =>item.Title)
@@ -60,7 +69,7 @@
                             
                             
                             @Html.ActionLink($"{item.Comments.Count}","CommentsByPostId","Comment",new{
-                    @id = @item.Id}, null);
+                    @id = @item.Id}, null)
                         </td>
                         <td>
                         

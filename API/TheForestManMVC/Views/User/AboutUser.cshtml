@@ -1,4 +1,5 @@
-﻿@model Models.Response.UserPostsCommentsInfo
+﻿@using TheForestManMVC.Controllers
+@model Models.Response.UserPostsCommentsInfo
 
 @{
     ViewData["Title"] = "AboutUser";
@@ -10,18 +11,17 @@
     <h4>Here is the user Activity</h4>
     <hr />
     <h5>
+        @if(UserController.token != null)
+        @if(UserController.token.UserId == Model.Id)
+        {
          <div>
              @Html.ActionLink("ChangePassword", "Edit","User") |
              @Html.ActionLink("DeleteAccount", "Delete","User")
          </div>
+        }
     </h5>
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Id)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Id)
-        </dd>
+        
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.UserName)
         </dt>
@@ -66,10 +66,14 @@
                     @id = @item.Id}, null);
                 </td>
                 <td>
-                    <div>
-                        @Html.ActionLink("Edit", "Edit","Home", new { @id = @item.Id,@body=@item.Body}) |
-                        @Html.ActionLink("Delete", "Delete","Home", new { @id = @item.Id,@body= @item.Body })
-                    </div>
+                    @if (UserController.token != null)
+                        @if (UserController.token.UserId == Model.Id)
+                        {
+                            <div>
+                                @Html.ActionLink("Edit", "Edit","Home", new { @id = @item.Id,@body=@item.Body}) |
+                                @Html.ActionLink("Delete", "Delete","Home", new { @id = @item.Id,@body= @item.Body })
+                            </div>
+                    }
                 </td>
             </tr>  
     }
@@ -78,9 +82,9 @@
                 <th>
                     @Html.DisplayNameFor(model => model.Comments[0].Author)
                 </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Comments[0].Body)
-                </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Comments[0].Body)
+                    </th>
                 <th>
                     @Html.DisplayNameFor(model => model.Comments[0].Created)
                 </th>
@@ -105,12 +109,17 @@
                     @Html.DisplayFor(model => model.Comments[i].Updated)
                 </td>
                 <td>
-                <div>
-                    @Html.ActionLink("Edit", "Edit","Comment", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body,@userId=@Model.Id}) |
-                    @Html.ActionLink("Delete", "Delete","Comment", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body })
-                    </div>
+                    @if (UserController.token != null)
+                        @if (UserController.token.UserId == Model.Id)
+                        {
+                        <div>
+                            @Html.ActionLink("Edit", "Edit","Comment", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body,@userId=@Model.Id}) |
+                            @Html.ActionLink("Delete", "Delete","Comment", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body })
+                        </div>
+                        }
+
                 </td> 
-                </tr>
+             </tr>
 
             }
         </table>
