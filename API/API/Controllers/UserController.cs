@@ -381,6 +381,7 @@ namespace API.Controllers
             [FromQuery] string created
             )
         {
+            //var asta = new JwtSecurityTokenHandler().
             var userToDelete = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username &&u.IsDeleted==false);
             if (userToDelete == null) return NotFound();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
@@ -463,11 +464,12 @@ namespace API.Controllers
         
         private async Task<UserToken> BuildToken(User user)
         {
+            var expiration = DateTime.Now.AddDays(30);
             var claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email)
-                //new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                //,new Claim(ClaimTypes.Expiration, expiration)
             };
 
 
@@ -476,7 +478,7 @@ namespace API.Controllers
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTkey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var expiration = DateTime.Now.AddDays(1);
+            
 
             JwtSecurityToken token = new JwtSecurityToken(
                 issuer: null,

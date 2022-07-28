@@ -45,22 +45,36 @@ namespace TheForestManMVC.Controllers
             
             using (HttpClient client = new HttpClient())
             {
+
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 CommentRequest commentRequest = new CommentRequest()
                 {
                     Body = commentBody,
                     PostId = postId
                 };
-                if (UserController.token == null || UserController.token != null && isAnonyme != null)
+                if (Request.Cookies["token3"] == null)
                 {
                     var requestComm = await client.PostAsJsonAsync($"{HomeController.url}/comment/loggedout", commentRequest);
-                    
                 }
                 else
                 {
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    UserController.token.Token);
-                    var requestComm = await client.PostAsJsonAsync($"{HomeController.url}/comment/loggedin", commentRequest);
+                    var token = Request.Cookies["token3"];
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    if (responseToken.Token != null && isAnonyme != null)
+                    {
+                        var requestComm = await client.PostAsJsonAsync($"{HomeController.url}/comment/loggedout", commentRequest);
+
+                    }
+                    else
+                    {
+
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                            responseToken.Token);
+                        var requestComm = await client.PostAsJsonAsync($"{HomeController.url}/comment/loggedin", commentRequest);
+                    }
                 }
             }
             return RedirectToAction("CommentsByPostId","Comment", new { id = postId },null);
@@ -69,10 +83,13 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                 UserController.token.Token);
+                    responseToken.Token);
                 var requestComm = await client.PutAsJsonAsync($"{HomeController.url}/comment/{id}", body);
                 if(requestComm != null)
                 {
@@ -101,10 +118,13 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                 UserController.token.Token);
+                    responseToken.Token);
                 HttpResponseMessage commentResponse = await client.DeleteAsync($"{HomeController.url}/comment/{commentId}");
 
                 if (commentResponse.StatusCode == HttpStatusCode.NoContent)
@@ -118,10 +138,13 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                 UserController.token.Token);
+                    responseToken.Token);
                 HttpResponseMessage commentResponse =await client.GetAsync($"{HomeController.url}/comment/{id}");
                 
                 if(commentResponse.IsSuccessStatusCode)

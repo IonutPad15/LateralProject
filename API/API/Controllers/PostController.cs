@@ -200,7 +200,7 @@ namespace API.Controllers
                 Title = post.Title
 
             };
-            await _context.SaveChangesAsync();
+             _context.SaveChangesAsync();
 
             return Ok();
         }

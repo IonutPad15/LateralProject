@@ -46,9 +46,13 @@ namespace TheForestManMVC.Controllers
         {
             using(HttpClient client = new HttpClient())
             {
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    UserController.token.Token);
+                    responseToken.Token);
                 PostRequest postRequest = new PostRequest()
                 {
                     Body = postBody,
@@ -62,10 +66,14 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    UserController.token.Token);
-                
+                    responseToken.Token);
+
                 HttpResponseMessage response = await client.PutAsJsonAsync($"{url}/post/{id}", body);
                 return RedirectToAction("Index");
             }
@@ -83,10 +91,13 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                 UserController.token.Token);
+                    responseToken.Token);
                 HttpResponseMessage postResponse = await client.DeleteAsync($"{HomeController.url}/post/{postInfo.Id}");
 
                 if (postResponse.StatusCode == HttpStatusCode.NoContent)
@@ -101,10 +112,13 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                 UserController.token.Token);
+                    responseToken.Token);
                 HttpResponseMessage postResponse = await client.GetAsync($"{HomeController.url}/post/{id}");
 
                 if (postResponse.IsSuccessStatusCode)

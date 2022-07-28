@@ -1,9 +1,11 @@
 ﻿@using Models.Response
-@using TheForestManMVC.Controllers
+
+@using System.Text.Json
 @{
     ViewData["Title"] = "Home Page";
+    
 }
-@if(UserController.token!= null)
+@if(Context.Request.Cookies["token3"]!= null)
 {
     <div class="row">
     <div class="col-md-4">
@@ -73,14 +75,22 @@
                         </td>
                         <td>
                         
-                    @if(UserController.token!=null && @item.UserId!=null)
-                    @if(UserController.token.UserId == @item.UserId)
-                {
-                    <div>
-                        @Html.ActionLink("Edit", "Edit", new { @id = @item.Id,@body=@item.Body}) |
-                        @Html.ActionLink("Delete", "Delete", new { @id = @item.Id,@body= @item.Body })
-                    </div>
-                }
+                    @if(Context.Request.Cookies["token3"]!=null && @item.UserId!=null
+                    &&!Context.Request.Cookies["token3"].Equals(""))
+                    {
+                        
+                            var token = Context.Request.Cookies["token3"];
+                            var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                            var responseToken = JsonSerializer.Deserialize<UserToken>(
+                                token, jsonSerializerOptions);
+                        @if(responseToken.UserId == @item.UserId)
+                        {
+                            <div>
+                                @Html.ActionLink("Edit", "Edit", new { @id = @item.Id,@body=@item.Body}) |
+                                @Html.ActionLink("Delete", "Delete", new { @id = @item.Id,@body= @item.Body })
+                            </div>
+                        }
+                    }
                         </td>
                     </tr>  
     }

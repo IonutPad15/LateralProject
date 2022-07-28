@@ -1,4 +1,8 @@
-﻿@using TheForestManMVC.Controllers
+﻿@using System.Text.Json
+@using Models.Response
+@using System.Net
+@using System.Net.Http.Headers
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,8 +32,8 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">Users</a>
                         </li>
                         
-                        
-                            @if (UserController.token == null)
+
+                            @if (Context.Request.Cookies["token3"] == null )
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="LogIn">Log in</a>

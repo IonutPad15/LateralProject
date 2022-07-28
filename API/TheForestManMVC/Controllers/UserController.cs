@@ -5,14 +5,14 @@ using Models.Response;
 using System.Net;
 using TheForestManMVC.Models;
 using System.Text.Json;
+using System.Web;
+using RestSharp;
 
 namespace TheForestManMVC.Controllers
 {
     public class UserController : Controller
     {
         private static UserModel registerCredentials = new UserModel();
-        public static Credentials loginCredentials = new Credentials();
-        public static UserToken token;
         public async Task<ActionResult> Index()
         {
             List<UserInfo> users = await GetAllUsers();
@@ -73,10 +73,13 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                 UserController.token.Token);
+                    responseToken.Token);
                 var respuesta = await client.GetAsync($"{HomeController.url}/user/{type}?username={registerCredentials.UserName}&&email={registerCredentials.Email}");
 
                 if (respuesta.IsSuccessStatusCode)
@@ -133,7 +136,7 @@ namespace TheForestManMVC.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<ActionResult> LogInAction(Credentials credentials)
+        public async Task<ActionResult> LogInAction(Credentials credentials, string rememberMe )
         {
             using (HttpClient client = new HttpClient())
             {
@@ -147,10 +150,16 @@ namespace TheForestManMVC.Controllers
                     ViewBag.ErrorUser = "Invalid log in attempt";
                     return View("LogIn");
                 }
-                var responseToken = JsonSerializer.Deserialize<UserToken>(await
-                    httpResponseToken.Content.ReadAsStringAsync(), jsonSerializerOptions);
-                token = responseToken;
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token.Token);
+                var stringtoken = await httpResponseToken.Content.ReadAsStringAsync();
+                if (rememberMe != null)
+                {
+                    Response.Cookies.Append("token3", stringtoken, new CookieOptions() { Expires = DateTime.Now.AddDays(6) });
+                }
+                else
+                {
+                    Response.Cookies.Append("token3", stringtoken);
+                }
+
                 
                 return RedirectToAction("Index", "Home");
             }
@@ -162,7 +171,11 @@ namespace TheForestManMVC.Controllers
                 HttpResponseMessage response = new HttpResponseMessage();
                 if (id == null)
                 {
-                    response = await client.GetAsync($"{HomeController.url}/user/{token.UserId}/postscomments");
+                    var token = Request.Cookies["token3"];
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    response = await client.GetAsync($"{HomeController.url}/user/{responseToken.UserId}/postscomments");
                 }
                 else
                 {
@@ -176,19 +189,6 @@ namespace TheForestManMVC.Controllers
                 return Content("nu merge...");
             }
         }
-        //public async Task<ActionResult> AboutUser(Guid id)
-        //{
-        //    using (HttpClient client = new HttpClient())
-        //    {
-        //        HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{id}/postscomments");
-        //        if (response.IsSuccessStatusCode)
-        //        {
-        //            var user3 = await response.Content.ReadFromJsonAsync<UserPostsCommentsInfo>();
-        //            return View(user3);
-        //        }
-        //        return Content("nu merge...");
-        //    }
-        //}
         public async Task<ActionResult> LogIn()
         {
             
@@ -196,7 +196,11 @@ namespace TheForestManMVC.Controllers
         }
         public async Task<ActionResult> LogOut()
         {
-            UserController.token = null;
+            var stringToken = Request.Cookies["token3"];
+            HttpContext.Response.Cookies.Delete("token3");
+            var token = Request.Cookies["token3"];
+            //HttpContext.Response.Cookies.Append("token", stringToken, new CookieOptions() { Expires = DateTime.Now.AddDays(-1) });
+            
             return RedirectToAction("Index","Home");
         }
 
@@ -204,7 +208,11 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
-                HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{token.UserId}");
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
+                HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{responseToken.UserId}");
                 if (response.IsSuccessStatusCode)
                 {
                     var user = await response.Content.ReadFromJsonAsync<UserInfo>();
@@ -252,10 +260,13 @@ namespace TheForestManMVC.Controllers
             };
             using (HttpClient client = new HttpClient())
             {
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                 UserController.token.Token);
+                    responseToken.Token);
                 var respueste = await client.PutAsJsonAsync($"{HomeController.url}/user", userCode);
                 if (respueste.IsSuccessStatusCode)
                     return RedirectToAction("Index", "User");
@@ -270,7 +281,11 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
-                HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{token.UserId}");
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
+                HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{responseToken.UserId}");
                 if (response.IsSuccessStatusCode)
                 {
                     var user = await response.Content.ReadFromJsonAsync<UserInfo>();
@@ -281,6 +296,7 @@ namespace TheForestManMVC.Controllers
         }
         public async Task<ActionResult> GetDeleteCode(UserModel userModel)
         {
+            
             registerCredentials.UserName = userModel.UserName;
             registerCredentials.Email = userModel.Email;
             var code = await GetCode("deletecode");
@@ -300,10 +316,13 @@ namespace TheForestManMVC.Controllers
             };
             using (HttpClient client = new HttpClient())
             {
+                var token = Request.Cookies["token3"];
+                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                 UserController.token.Token);
+                    responseToken.Token);
                 var respueste = await client.DeleteAsync($"{HomeController.url}/user/delete?username={registerCredentials.UserName}&&codeFromUser={coderead.Code}&&created={coderead.Created.ToString()}");
                 if (respueste.StatusCode == HttpStatusCode.NoContent)
                 {

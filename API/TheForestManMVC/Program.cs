@@ -20,6 +20,7 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.FromMinutes(5)
     };
 });
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 //client.DefaultRequestHeaders.Accept.Clear() 

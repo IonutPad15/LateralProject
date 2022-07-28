@@ -1,4 +1,6 @@
-﻿@using TheForestManMVC.Controllers
+﻿@using System.Text.Json
+@using Models.Response
+@using TheForestManMVC.Controllers
 @model Models.Response.PostInfo
 
 @{
@@ -55,17 +57,27 @@
         <dd>
             <div class="row">
                 <div class="col-md-4">
-                    @if (UserController.token != null && Model.UserId!=null)
-                    @if(UserController.token.UserId == Model.UserId)
-                {
-                    <div>
-                        @Html.ActionLink("Edit", "Edit","Home", new { @id = Model.Id,@body=Model.Body}) |
-                        @Html.ActionLink("Delete", "Delete","Home", new { @id = Model.Id,@body= Model.Body })
-                    </div>
-                }
+                    @{
+                            
+                            @if (Context.Request.Cookies["token3"] != null && Model.UserId!=null)
+                            {
+                                var token = Context.Request.Cookies["token3"];
+                                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                                    token, jsonSerializerOptions);
+                            @if (responseToken.UserId == Model.UserId)
+                            {
+                                <div>
+                                    @Html.ActionLink("Edit", "Edit","Home", new { @id = Model.Id,@body=Model.Body}) |
+                                    @Html.ActionLink("Delete", "Delete","Home", new { @id = Model.Id,@body= Model.Body })
+                                </div>
+                            }
+                            }
+                        }
+                    
                     <form asp-controller="Comment" asp-action="CreateComment">
                         <p><h1>Add a comment</h1></p>
-                        @if(UserController.token!=null)
+                        @if(Context.Request.Cookies["token3"]!=null)
                         {
                             <input type="radio" name="isAnonyme" value="Anonyme" id="anonyme" />
                             <label for="anonyme"> Comment as Anonyme</label><br>
@@ -132,14 +144,21 @@
                     @Html.DisplayFor(model => model.Comments[i].Updated)
                 </td>
                 <td>
-                    @if(UserController.token!=null && Model.Comments[i].UserId!=null)
-                    @if(UserController.token.UserId == Model.Comments[i].UserId)
-                {
-                    <div>
-                    @Html.ActionLink("Edit", "Edit", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body,@postId=@Model.Id}) |
-                    @Html.ActionLink("Delete", "Delete", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body })
-                    </div>
-                }
+                    @if(Context.Request.Cookies["token3"]!=null && Model.Comments[i].UserId!=null 
+                    )
+                    {
+                        var token = Context.Request.Cookies["token3"];
+                                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                                var responseToken = JsonSerializer.Deserialize<UserToken>(
+                                    token, jsonSerializerOptions);
+                        @if(responseToken.UserId == Model.Comments[i].UserId)
+                        {
+                            <div>
+                            @Html.ActionLink("Edit", "Edit", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body,@postId=@Model.Id}) |
+                            @Html.ActionLink("Delete", "Delete", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body })
+                            </div>
+                        }
+                    }
                 </td>
                 
                 </tr>
@@ -147,8 +166,4 @@
         </table>
         </dd>
     </dl>
-</div>
-<div>
-    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
-    <a asp-action="Index">Back to List</a>
 </div>
