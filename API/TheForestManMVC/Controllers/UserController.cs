@@ -58,7 +58,10 @@ namespace TheForestManMVC.Controllers
             {
                 var respueste = await client.PostAsJsonAsync($"{HomeController.url}/user/create", userCode);
                 if (respueste.IsSuccessStatusCode)
-                    return RedirectToAction("Index", "User");
+                {
+                    registerCredentials.Password = null;
+                    return RedirectToAction("Index", "Home");
+                }
                 else
                 {
                     ViewBag.ErrorUser = "A aparut o eroare";
@@ -269,7 +272,10 @@ namespace TheForestManMVC.Controllers
                     responseToken.Token);
                 var respueste = await client.PutAsJsonAsync($"{HomeController.url}/user", userCode);
                 if (respueste.IsSuccessStatusCode)
-                    return RedirectToAction("Index", "User");
+                {
+                    registerCredentials.Password = null;
+                    return RedirectToAction("Index", "Home");
+                }
                 else
                 {
                     ViewBag.ErrorUser = "A aparut o eroare";

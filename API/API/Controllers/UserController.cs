@@ -149,26 +149,6 @@ namespace API.Controllers
             return user == null ? NotFound() : Ok(userpostinfo);
 
         }
-        //[HttpGet("{id}/postscomments")]
-        //[ProducesResponseType(typeof(UserPostsInfo), StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
-        //public async Task<IActionResult> GetPostsAndCommentsByUserId(Guid id)
-        //{
-        //    var user = await _context.Users.FirstOrDefaultAsync(u=> id==u.Id &&u.IsDeleted==false);
-
-        //    var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x=>x.Comments).Single(x=> x.Id == id);
-        //    UserPostsInfo userpostinfo = new UserPostsInfo()
-        //    {
-        //        UserName = usertester.UserName,
-        //        Email = usertester.Email,
-        //        Id  = usertester.Id,
-        //        Posts = usertester.Posts,
-        //        Comments = usertester.Comments
-        //    };
-        //    return user == null ? NotFound() : Ok(userpostinfo);
-
-        //}
-
 
         private enum ResultCode
         {

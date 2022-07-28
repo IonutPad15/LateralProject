@@ -37,7 +37,7 @@ namespace API.Utils
                         nr3 = random.Next(9);
                         nr4 = random.Next(9);
                         string verif = "" + nr1 + nr2 + nr3 + nr4;
-                        string body = "<p>" + message + "</p>";
+                        string body = "<p>" + message + "</p><p> The code is available 60 seconds!<p>";
                         body += "<p> Safety code</p>";
                         body += "<p> <h1> " + verif + " </h1> </p>";
                         mail.From = new MailAddress(from);
