@@ -58,6 +58,8 @@ namespace TheForestManMVC.Controllers
                 }
                 else
                 {
+                    // REVIEW (Zoli): 
+                    // add null check, pay attention to the VS warnings
                     var token = Request.Cookies["token3"];
                     var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
                     var responseToken = JsonSerializer.Deserialize<UserToken>(

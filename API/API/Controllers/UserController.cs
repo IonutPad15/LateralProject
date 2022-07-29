@@ -58,6 +58,10 @@ namespace API.Controllers
                                 UserName = users.UserName,
                                 Email = users.Email
                             };
+
+            // REVIEW (Zoli): 
+            // why not using singleOrdefault directly on the query?
+            // use null check and NotFound as in the other controllers
             List<UserInfo> userInfos = await usersinfo.ToListAsync<UserInfo>();
             UserInfo user = userInfos.SingleOrDefault();
 
@@ -71,6 +75,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPostsAndCommentsByUserId(Guid id)
         {
+            // REVIEW (Zoli): 
+            // why user is red from repo here, but null check is at the end?
             var user = await _context.Users.FirstOrDefaultAsync(u => id == u.Id && u.IsDeleted == false);
 
             var usertester = _context.Users.Include(x => x.Posts)
@@ -264,6 +270,8 @@ namespace API.Controllers
 
                 if (userclaim != null)
                 {
+                    // REVIEW (Zoli): 
+                    // emailClaim can be null
 
                     if (!userclaim.Value.Equals(userExists.UserName) || !emailclaim.Value.Equals(userExists.Email))
                         return BadRequest("Not his account");
@@ -367,6 +375,8 @@ namespace API.Controllers
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
             {
+                // REVIEW (Zoli): 
+                // you can combine conditions with &&
                 if (userCodes.ContainsKey(username))
                     if (!userclaim.Value.Equals(userToDelete.UserName))
                     return BadRequest("Not his account");
@@ -382,7 +392,10 @@ namespace API.Controllers
                     }
                     else if(code.Code.Equals(codeFromUser))
                     {
-
+                        // REVIEW (Zoli): 
+                        // lazy loading used, it was intended?
+                        // you can read the posts an comments directly, not through user
+                        // READ ABOUT: EF Linq & lazy loading
                         var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false) ;
                         var usercomments = _context.Users.Include(x=>x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false);
                         //usertester.Posts.Find(p => p.UserId == usertester.Id).Author = "[User Deleted]";

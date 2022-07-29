@@ -26,8 +26,14 @@ namespace API.Controllers
         {
             //List<Post> posts = await _context.Posts.ToListAsync();
             //posts.RemoveAll(p => p.IsDeleted == true);
+
+            // REVIEW (Zoli):
+            // filter deleted posts on reading from repo, not after (ex: Where(x=>x.IsDeleted == false)
             List<Post> posts = await _context.Posts.Include(x => x.Comments ).ToListAsync();
             posts.RemoveAll(p => p.IsDeleted == true);
+
+            // REVIEW (Zoli):
+            // you aare reading the posts again from the DB (with lazy loading)
             var postinfos = from post in _context.Posts
                             where post.IsDeleted == false
                             select new PostInfo()
@@ -66,6 +72,10 @@ namespace API.Controllers
                 postsInfo[i].Comments.Reverse();
                 i++;
             }
+
+            // REVIEW (Zoli):
+            // you can order by the posts already when reading from db
+            // READ ABOUT: linq functions
             postsInfo = postsInfo.OrderBy(x => x.Updated).ToList<PostInfo>();
             postsInfo.Reverse();
             //List<PostInfo> posts = await postinfos.ToListAsync<PostInfo>();
@@ -81,6 +91,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPostByid(Guid id)
         {
+            // REVIEW (Zoli):
+            // what happens if post is null (not found)?
             var post = await _context.Posts.FirstOrDefaultAsync(p=>p.Id==id && p.IsDeleted==false);
             PostInfo postInfo = new PostInfo()
             {
@@ -102,6 +114,10 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetCommentsByid(Guid id)
         {
+            // REVIEW (Zoli): 
+            // is it the .Single() linq function the right method to use here?
+            // READ ABOUT: Linq functions
+
             //var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
             var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id && x.IsDeleted == false);
             posttester.Comments.RemoveAll(c => c.IsDeleted == true);
@@ -222,6 +238,9 @@ namespace API.Controllers
                 if (!userclaim.Value.Equals(user.UserName))
                     return BadRequest("Not his post");
             }
+            // REVIEW (Zoli): 
+            // is it the .Single() linq function the right method to use here?
+            // READ ABOUT: Linq functions
             var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id && x.IsDeleted == false);
             for(int i=0; i<posttester.Comments.Count;++i)
             {

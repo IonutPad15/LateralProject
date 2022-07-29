@@ -57,6 +57,15 @@ namespace API.Controllers
             //    commentsinfo.Add(commentInfo);
             //}
             //return commentsinfo;
+
+            // REVIEW (Zoli):
+            // 1. try to use same coding standards trought the project.
+            // Ex: above in the GetCommentById, you used EFLinq methods (FirstOrDefaultAsync), and here below you are using query expression (from x where y)
+            // you should use Linq or query expression in all places (I recommend EF Linq)
+            // - READ ABOUT: Linq
+            // 2. below you are returning an IQueryable. this means lazy loading (data it's not red from db until not iterated). Is this the intended logic?
+            // - READ ABOUT: IQueryable and lazy loading.
+
             var comments = from comment in _context.Comments
                            where comment.IsDeleted == false
                            select new CommentInfo()
@@ -69,6 +78,9 @@ namespace API.Controllers
                                UserId = comment.UserId
                            };
             return comments;
+
+            // REVIEW (Zoli):
+            // Clean up not used code
             List<CommentInfo> commentInfos = await comments.ToListAsync<CommentInfo>();
 
             return commentInfos;
@@ -131,6 +143,8 @@ namespace API.Controllers
             }
             var comment = _context.Comments.FirstOrDefault(c => c.Id == id && c.IsDeleted == false);
             if (comment == null) return NotFound();
+            // REVIEW (Zoli):
+            // Get used to arrange the code (format document) to have a clean, readble code
             var user = await _context.Users.FirstOrDefaultAsync(u=> u.Id ==comment.UserId && u.IsDeleted==false
             &&userclaim.Value.Equals(comment.Author)
             );
