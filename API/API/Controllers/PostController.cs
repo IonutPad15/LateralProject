@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
 using Models.Request;
 using Models.Response;
+using API.Services;
 
 namespace API.Controllers
 {
@@ -25,11 +26,10 @@ namespace API.Controllers
         {
             // REVIEW (Zoli):
             // filter deleted posts on reading from repo, not after (ex: Where(x=>x.IsDeleted == false)
-            //List<Post> posts = await _context.Posts.Include(x => x.Comments ).ToListAsync();
-            //List<Post> posts = await _context.Posts.Include(x => x.Comments).Where(x=>x.IsDeleted).ToListAsync();
-            List<Post> posts = await _context.Posts.Include(x => x.Comments)
-                .Where(x => x.IsDeleted==false).OrderByDescending(p => p.Updated).ToListAsync();
 
+            //List<Post> posts = await _context.Posts.Include(x => x.Comments)
+            //    .Where(x => x.IsDeleted==false).OrderByDescending(p => p.Updated).ToListAsync();
+            List<Post> posts = await PostService.GetPosts(_context);
             // REVIEW (Zoli):
             // you aare reading the posts again from the DB (with lazy loading)
             var postsInfos = from post in posts
@@ -106,8 +106,9 @@ namespace API.Controllers
             // is it the .Single() linq function the right method to use here?
             // READ ABOUT: Linq functions
 
-            //var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
-            var posttester = await _context.Posts.Include(x => x.Comments).SingleAsync(x => x.Id == id && x.IsDeleted == false);
+
+            //var posttester = await _context.Posts.Include(x => x.Comments).FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
+            var posttester = await PostService.GetCommentsByPostId(_context, id);
             if(posttester == null) return NotFound();
             //posttester.Comments.RemoveAll(c => c.IsDeleted == true);
             PostInfo postcomments = new PostInfo()
@@ -155,7 +156,8 @@ namespace API.Controllers
             if (userclaim != null)
             {
 
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userclaim.Value && u.IsDeleted == false);
+                //var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userclaim.Value && u.IsDeleted == false);
+                var user = await UserService.GetUserByUsername(_context, userclaim.Value);
                 if (user == null) return BadRequest();
                 Post post = new Post();
                 post.Title = postrequest.Title;
@@ -164,8 +166,11 @@ namespace API.Controllers
                 post.UserId = user.Id;
                 post.Created = DateTime.Now;
                 post.Updated = DateTime.Now;
-                await _context.Posts.AddAsync(post);
-                await _context.SaveChangesAsync();
+                //await _context.Posts.AddAsync(post);
+                //await _context.SaveChangesAsync();
+                var codeResult = await PostService.CreatePost(_context, post);
+                if (codeResult == DbCodes.Codes.Error)
+                    return BadRequest("Something went wrong");
                 return Ok();
             }
             return BadRequest();
@@ -180,9 +185,10 @@ namespace API.Controllers
         {
             
             
-            var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false 
-            //&&p.User.UserName == userclaim.Value
-            );
+            //var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false 
+            ////&&p.User.UserName == userclaim.Value
+            //);
+            var post = await PostService.GetPostById(_context,id);
             if (post == null) return NotFound();
             
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == post.Author && u.IsDeleted == false);
@@ -196,18 +202,11 @@ namespace API.Controllers
 
             post.Description = newDesciption;
             post.Updated = DateTime.Now;
-            _context.Entry(post).State = EntityState.Modified;
-            PostInfo postInfo = new PostInfo()
-            {
-                Created = post.Created,
-                Updated = post.Updated,
-                Body = post.Description,
-                Author = post.Author,
-                Id = post.Id,
-                Title = post.Title
-
-            };
-            await _context.SaveChangesAsync();
+            //_context.Entry(post).State = EntityState.Modified;
+            //await _context.SaveChangesAsync();
+            var codeResult = await PostService.UpdatePost(_context, post);
+            if (codeResult == DbCodes.Codes.Error)
+                return BadRequest("Something went wrong");
 
             return Ok();
         }
@@ -219,7 +218,8 @@ namespace API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var postToDelete = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
+            //var postToDelete = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
+            var postToDelete = await PostService.GetPostById(_context, id);
             if (postToDelete == null) return NotFound();
             var user = await _context.Users.FirstOrDefaultAsync(u=> u.Id== postToDelete.UserId && u.IsDeleted ==false);
             if (user == null) return BadRequest("You can't delete this post");
@@ -232,7 +232,8 @@ namespace API.Controllers
             // REVIEW (Zoli): 
             // is it the .Single() linq function the right method to use here?
             // READ ABOUT: Linq functions
-            var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id && x.IsDeleted == false);
+            //var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id && x.IsDeleted == false);
+            var posttester = await PostService.GetCommentsByPostId(_context, id);
             for(int i=0; i<posttester.Comments.Count;++i)
             {
                 var comment = posttester.Comments[i];
@@ -240,8 +241,11 @@ namespace API.Controllers
                 _context.Entry(comment).State = EntityState.Modified;
             }
             postToDelete.IsDeleted = true;
-            _context.Entry(postToDelete).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            //_context.Entry(postToDelete).State = EntityState.Modified;
+            //await _context.SaveChangesAsync();
+            var codeResult = await PostService.UpdatePost(_context, postToDelete);
+            if (codeResult == DbCodes.Codes.Error)
+                return BadRequest("Something went wrong");
 
             return NoContent();
         }

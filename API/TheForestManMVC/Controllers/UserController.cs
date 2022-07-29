@@ -76,13 +76,17 @@ namespace TheForestManMVC.Controllers
         {
             using (HttpClient client = new HttpClient())
             {
-                var token = Request.Cookies["token3"];
-                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                    token, jsonSerializerOptions);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    responseToken.Token);
+                var token = Request.Cookies["token3"];
+                if (token != null)
+                {
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                        responseToken.Token);
+                }
                 var respuesta = await client.GetAsync($"{HomeController.url}/user/{type}?username={registerCredentials.UserName}&&email={registerCredentials.Email}");
 
                 if (respuesta.IsSuccessStatusCode)
@@ -332,7 +336,7 @@ namespace TheForestManMVC.Controllers
                 var respueste = await client.DeleteAsync($"{HomeController.url}/user/delete?username={registerCredentials.UserName}&&codeFromUser={coderead.Code}&&created={coderead.Created.ToString()}");
                 if (respueste.StatusCode == HttpStatusCode.NoContent)
                 {
-                    token = null;
+                    HttpContext.Response.Cookies.Delete("token3");
                     return RedirectToAction("Index", "User");
 
                 }

@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Models.Request;
 using Models.Response;
+using API.Services;
+
 
 namespace API.Controllers
 {
@@ -32,16 +34,16 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IEnumerable<UserInfo>> GetUsers()
         {
-            
-                var usersinfo = from users in _context.Users
-                                where users.IsDeleted == false
-                                select new UserInfo()
-                                {
-                                    Id = users.Id,
-                                    UserName = users.UserName,
-                                    Email = users.Email
-                                };
-                List<UserInfo> userInfos = await usersinfo.ToListAsync<UserInfo>();
+
+            //var usersinfo = from users in _context.Users
+            //                where users.IsDeleted == false
+            //                select new UserInfo()
+            //                {
+            //                    Id = users.Id,
+            //                    UserName = users.UserName,
+            //                    Email = users.Email
+            //                };
+            List<UserInfo> userInfos = await UserService.GetUsers(_context);
                 return userInfos;
             
         }
@@ -75,13 +77,14 @@ namespace API.Controllers
             // REVIEW (Zoli): 
             // why user is red from repo here, but null check is at the end?
             
-            var usertester = await _context.Users.Include(x => x.Posts)
-                                           .ThenInclude(x => x.Comments)
-                                           .SingleAsync(x => x.Id == id &&x.IsDeleted == false);
-            if (usertester == null) return NotFound();
-            var usercomments = _context.Users.Include(x => x.Comments)
-                                                .Single(x => x.Id == id && x.IsDeleted == false);
-            
+            //var usertester = await _context.Users.Include(x => x.Posts)
+            //                               .ThenInclude(x => x.Comments)
+            //                               .SingleAsync(x => x.Id == id &&x.IsDeleted == false);
+            //if (usertester == null) return NotFound();
+            //var usercomments = _context.Users.Include(x => x.Comments)
+            //                                    .Single(x => x.Id == id && x.IsDeleted == false);
+
+            var usertester = await UserService.GetPostsAndCommentsByUserId(_context, id);
             UserPostsCommentsInfo userpostinfo = new UserPostsCommentsInfo()
             {
                 UserName = usertester.UserName,
@@ -184,7 +187,7 @@ namespace API.Controllers
         {
             if (username == null || email == null) return BadRequest("username and email are required");
             //ResultCode code =
-            var usernameExists = await _context.Users.FirstOrDefaultAsync(u =>  u.UserName == username &&u.IsDeleted==false);
+            var usernameExists = await UserService.GetUserByUsername(_context, username);
             if (usernameExists == null)
             {
                 
@@ -237,9 +240,12 @@ namespace API.Controllers
                         Password = hashedPassword,
                         Id = userCode.Id
                     };
-                    await _context.Users.AddAsync(user);
+                    //await _context.Users.AddAsync(user);
 
-                    await _context.SaveChangesAsync();
+                    //await _context.SaveChangesAsync();
+                    var codeResult = await UserService.CreateUser(_context, user);
+                    if (codeResult == DbCodes.Codes.Error) 
+                        return BadRequest("ERROR");
                     return await BuildToken(user);
                 }
                 else
@@ -260,7 +266,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetNewPassCode([FromQuery] string username, [FromQuery] string email)
         {
-            var userExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username && u.IsDeleted == false && u.Email == email);
+            //var userExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username && u.IsDeleted == false && u.Email == email);
+            var userExists = await UserService.GetUserByUsernameAndEmail(_context, username, email);
             if (userExists != null)
             {
                 var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
@@ -268,8 +275,6 @@ namespace API.Controllers
 
                 if (userclaim != null && emailclaim!=null)
                 {
-                    // REVIEW (Zoli): 
-                    // emailClaim can be null
 
                     if (!userclaim.Value.Equals(userExists.UserName) || !emailclaim.Value.Equals(userExists.Email))
                         return BadRequest("Not his account");
@@ -294,8 +299,10 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Update([FromBody] UserCode userCode)
         {
-            var userToUpdate = await _context.Users.FirstOrDefaultAsync(u =>
-                (u.UserName == userCode.UserName &&  u.Email == userCode.Email) && u.IsDeleted == false);
+            //var userToUpdate = await _context.Users.FirstOrDefaultAsync(u =>
+            //    (u.UserName == userCode.UserName &&  u.Email == userCode.Email) && u.IsDeleted == false);
+            var userToUpdate = await UserService.GetUserByUsernameAndEmail(_context, 
+                userCode.UserName, userCode.Email);
             if (userToUpdate == null) return NotFound();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
@@ -313,15 +320,17 @@ namespace API.Controllers
 
 
                 userToUpdate.Password = hashedPassword;
-                _context.Entry(userToUpdate).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                UserInfo userInfo = new UserInfo()
-                {
-                    Id = userToUpdate.Id,
-                    Email = userToUpdate.Email,
-                    UserName = userToUpdate.UserName
-                };
-                return Ok(userInfo);
+                //_context.Entry(userToUpdate).State = EntityState.Modified;
+                //await _context.SaveChangesAsync();
+                //UserInfo userInfo = new UserInfo()
+                //{
+                //    Id = userToUpdate.Id,
+                //    Email = userToUpdate.Email,
+                //    UserName = userToUpdate.UserName
+                //};
+                var codeResult = await UserService.UpdateUser(_context, userToUpdate);
+                if (codeResult == DbCodes.Codes.Error) return BadRequest("Something went wrong");
+                return Ok();
             }
             //var userToUpdate = user;
             return NoContent();
@@ -332,7 +341,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetDeleteCode([FromQuery] string username, [FromQuery] string email)
         {
-            var userExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username &&u.IsDeleted==false &&u.Email == email);
+            var userExists = await UserService.GetUserByUsernameAndEmail(_context,username, email);
             if (userExists != null)
             {
                 var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
@@ -367,7 +376,7 @@ namespace API.Controllers
             [FromQuery] string created
             )
         {
-            var userToDelete = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username &&u.IsDeleted==false);
+            var userToDelete = await UserService.GetUserByUsername(_context, username);
             if (userToDelete == null) return NotFound();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
@@ -393,9 +402,9 @@ namespace API.Controllers
                         // lazy loading used, it was intended?
                         // you can read the posts an comments directly, not through user
                         // READ ABOUT: EF Linq & lazy loading
-                        var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false) ;
-                        var usercomments = _context.Users.Include(x=>x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false);
-                        
+                        //var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false) ;
+                        //var usercomments = _context.Users.Include(x=>x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false);
+                        var usertester = await UserService.GetPostsAndCommentsByUserId(_context, userToDelete.Id);
                         
                         
                         if (usertester.Posts != null)
@@ -422,9 +431,11 @@ namespace API.Controllers
                             }
                         }
                         userToDelete.IsDeleted = true;
-                        _context.Entry(userToDelete).State = EntityState.Modified;
-                        await _context.SaveChangesAsync();
-
+                        //_context.Entry(userToDelete).State = EntityState.Modified;
+                        //await _context.SaveChangesAsync();
+                        var codeResult = await UserService.UpdateUser(_context, userToDelete);
+                        if (codeResult == DbCodes.Codes.Error)
+                            return BadRequest("Something went wrong");
                         return NoContent();
                     }
                     else

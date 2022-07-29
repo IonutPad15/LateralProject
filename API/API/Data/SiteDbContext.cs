@@ -10,7 +10,10 @@ namespace API.Data
             : base(options)
         {
         }
+        public SiteDbContext()
+        {
 
+        }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

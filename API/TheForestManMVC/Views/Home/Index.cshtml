@@ -8,13 +8,17 @@
 @if(Context.Request.Cookies["token3"]!= null)
 {
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-10">
         <form asp-controller="Home" asp-action="CreatePost">
         <div class="input-group">
-            <input type="text" placeholder='"(Create Post-Title)")' name="postTitle" class="form-control" required >
-            <input type="text" placeholder='"(Create Post-Body)")' name="postBody" class="form-control" required >
+            <div class="col-md-2">
+            <input type="text" placeholder='(Title)' name="postTitle" class="form-control" required >
+            </div>
+            <div class="col-md-8">
+            <input type="text" placeholder='(Post-Body)' name="postBody" class="form-control" required >
+            </div>
             <span class="input-group-btn">
-                <input type="submit" value="Post" class="btn btn-primary" />
+                <input type="submit" value="Create Post" class="btn btn-primary" />
             </span>
         </div>
         <div class="form-group">

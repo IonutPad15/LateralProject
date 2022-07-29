@@ -17,14 +17,14 @@
         @Html.DisplayNameFor(model => model.Author)
     </dt>
     <dd class = "col-sm-10">
-        @if(!Model.Author.Equals("User Deleted"))
+        @if(!Model.Author.Equals("[User Deleted]"))
         {
         @Html.ActionLink($"{@Model.Author}","AboutUser","User",new{
                             @id = Model.UserId}, null)
         }
         else
         {
-            @Html.DisplayNameFor(model => model.Author)
+            @Html.DisplayFor(model => model.Author)
         }
     </dd>
     <dt class = "col-sm-2">
@@ -120,7 +120,7 @@
     {
         <tr>
         <td>
-            @if(!Model.Comments[i].Author.Equals("User Deleted") && Model.Comments[i].UserId!=null)
+            @if(!Model.Comments[i].Author.Equals("[User Deleted]") && Model.Comments[i].UserId!=null)
             {
                 @Html.ActionLink($"{@Model.Comments[i].Author}","AboutUser","User",new{
                         @id = Model.Comments[i].UserId}, null)
