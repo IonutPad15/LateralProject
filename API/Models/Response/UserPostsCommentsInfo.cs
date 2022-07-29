@@ -18,7 +18,7 @@ namespace Models.Response
         public string Email { get; set; }
         public List<PostInfo> Posts { get; set; }
         public List<CommentInfo> Comments { get; set; }
-
+        override
         public string ToString()
         {
             StringBuilder user = new StringBuilder();

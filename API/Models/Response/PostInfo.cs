@@ -20,6 +20,7 @@ namespace Models.Response
         public DateTime Updated { get; set; }
         public Guid? UserId { get; set; }
         public List<CommentInfo> Comments { get; set; }
+        override
         public string ToString()
         {
             string post = "User:" + Author + "\n" + Title + "\n" + Body + "\n";

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;//TODO: remove unused namespaces
+﻿
 using Microsoft.AspNetCore.Mvc;
 using API.Data;
 using API.Models;
@@ -46,22 +46,23 @@ namespace API.Controllers
             
         }
         [HttpGet("{id}")]
-        public async Task<UserInfo> GetUser(Guid id)
+        public async Task<ActionResult> GetUser(Guid id)
         {
 
-            var usersinfo = from users in _context.Users
-                            where users.IsDeleted == false
-                            && users.Id == id
-                            select new UserInfo()
-                            {
-                                Id = users.Id,
-                                UserName = users.UserName,
-                                Email = users.Email
-                            };
-            List<UserInfo> userInfos = await usersinfo.ToListAsync<UserInfo>();
-            UserInfo user = userInfos.SingleOrDefault();
-
-            return user;
+            // REVIEW (Zoli): 
+            // why not using singleOrdefault directly on the query?
+            // use null check and NotFound as in the other controllers
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == id && u.IsDeleted == false);
+            if (user == null) return NotFound();
+            //List<UserInfo> userInfos = await usersinfo.ToListAsync<UserInfo>();
+            //UserInfo user = userInfos.SingleOrDefault();
+            UserInfo userInfo = new UserInfo()
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                Id = user.Id
+            };
+            return Ok(userInfo);
 
         }
 
@@ -71,13 +72,16 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPostsAndCommentsByUserId(Guid id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => id == u.Id && u.IsDeleted == false);
-
-            var usertester = _context.Users.Include(x => x.Posts)
+            // REVIEW (Zoli): 
+            // why user is red from repo here, but null check is at the end?
+            
+            var usertester = await _context.Users.Include(x => x.Posts)
                                            .ThenInclude(x => x.Comments)
-                                           .Single(x => x.Id == id &&x.IsDeleted == false);
+                                           .SingleAsync(x => x.Id == id &&x.IsDeleted == false);
+            if (usertester == null) return NotFound();
             var usercomments = _context.Users.Include(x => x.Comments)
                                                 .Single(x => x.Id == id && x.IsDeleted == false);
+            
             UserPostsCommentsInfo userpostinfo = new UserPostsCommentsInfo()
             {
                 UserName = usertester.UserName,
@@ -86,7 +90,7 @@ namespace API.Controllers
                 
             };
             
-           
+            if(usertester.Posts!=null)
             foreach(var post in usertester.Posts)
             {
                 
@@ -122,8 +126,8 @@ namespace API.Controllers
                     userpostinfo.Posts.Add(postInfo);
                 }
             }
-            userpostinfo.Posts = userpostinfo.Posts.OrderBy(p => p.Updated).ToList<PostInfo>();
-            userpostinfo.Posts.Reverse();
+            userpostinfo.Posts = userpostinfo.Posts.OrderByDescending(p => p.Updated).ToList<PostInfo>();
+            if(usertester.Comments!=null)
             foreach (var comment in usertester.Comments)
             {
                 if (comment.IsDeleted == false)
@@ -146,7 +150,7 @@ namespace API.Controllers
             }
             userpostinfo.Comments = userpostinfo.Comments.OrderBy(p => p.Updated).ToList<CommentInfo>();
             userpostinfo.Comments.Reverse();
-            return user == null ? NotFound() : Ok(userpostinfo);
+            return  Ok(userpostinfo);
 
         }
 
@@ -262,8 +266,10 @@ namespace API.Controllers
                 var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
                 var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
 
-                if (userclaim != null)
+                if (userclaim != null && emailclaim!=null)
                 {
+                    // REVIEW (Zoli): 
+                    // emailClaim can be null
 
                     if (!userclaim.Value.Equals(userExists.UserName) || !emailclaim.Value.Equals(userExists.Email))
                         return BadRequest("Not his account");
@@ -332,7 +338,7 @@ namespace API.Controllers
                 var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
                 var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
 
-                if (userclaim != null)
+                if (userclaim != null && emailclaim!=null)
                 {
 
                     if (!userclaim.Value.Equals(userExists.UserName) || !emailclaim.Value.Equals(userExists.Email))
@@ -361,12 +367,13 @@ namespace API.Controllers
             [FromQuery] string created
             )
         {
-            //var asta = new JwtSecurityTokenHandler().
             var userToDelete = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username &&u.IsDeleted==false);
             if (userToDelete == null) return NotFound();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
             {
+                // REVIEW (Zoli): 
+                // you can combine conditions with &&
                 if (userCodes.ContainsKey(username))
                     if (!userclaim.Value.Equals(userToDelete.UserName))
                     return BadRequest("Not his account");
@@ -382,32 +389,34 @@ namespace API.Controllers
                     }
                     else if(code.Code.Equals(codeFromUser))
                     {
-
+                        // REVIEW (Zoli): 
+                        // lazy loading used, it was intended?
+                        // you can read the posts an comments directly, not through user
+                        // READ ABOUT: EF Linq & lazy loading
                         var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false) ;
                         var usercomments = _context.Users.Include(x=>x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false);
-                        //usertester.Posts.Find(p => p.UserId == usertester.Id).Author = "[User Deleted]";
-                        //_context.Entry(usertester.Posts).State = EntityState.Modified;
-                        usertester.Posts.RemoveAll(p => p.IsDeleted == true);
-                        usertester.Comments.RemoveAll(c => c.IsDeleted == true);
+                        
+                        
+                        
                         if (usertester.Posts != null)
                         {
+                            usertester.Posts.RemoveAll(p => p.IsDeleted == true);
                             for (int i = 0; i < usertester.Posts.Count; ++i)
                             {
                                 var post = usertester.Posts[i];
                                 post.Author = "[User Deleted]";
-                                //post.UserId = null;
+                                
                                 post.Updated = DateTime.Now;
-                                //--i;
                                 _context.Entry(post).State = EntityState.Modified;
                             }
                         }
                         if (usertester.Comments != null)
                         {
+                            usertester.Comments.RemoveAll(c => c.IsDeleted == true);
                             for (int i = 0; i < usertester.Comments.Count; ++i)
                             {
                                 var comment = usertester.Comments[i];
                                 comment.Author = "[User Deleted]";
-                                //comment.UserId = null;
                                 comment.Updated = DateTime.Now;
                                 _context.Entry(comment).State = EntityState.Modified;
                             }
@@ -429,7 +438,6 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserToken>> Login([FromBody] Credentials credentials)
         {
-            //fa doar cu username sau doar cu email
             HashHelper hashHelper = new HashHelper();
             string hashedPassword = hashHelper.GetHash(credentials.Password);
             var user = _context.Users.SingleOrDefault(x=> x.IsDeleted == false 
@@ -437,9 +445,6 @@ namespace API.Controllers
             &&(x.Email==credentials.NameEmail|| x.UserName == credentials.NameEmail));
             if (user == null) return BadRequest("Invalid login attempt");
             else return await BuildToken(user);
-            
-
-
         }
         
         private async Task<UserToken> BuildToken(User user)
@@ -449,16 +454,10 @@ namespace API.Controllers
             {
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email)
-                //,new Claim(ClaimTypes.Expiration, expiration)
             };
-
-
-
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTkey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            
 
             JwtSecurityToken token = new JwtSecurityToken(
                 issuer: null,

@@ -24,7 +24,6 @@ namespace API.Utils
                     string pass = "ihparbqnevrgcalm";//cheie de aplicatie furnizata de gmail
                     if (to.Equals("") || !to.Contains("@"))//verificare adresa de mail introdusa sa fie valida
                     {
-                        //TODO: use Enums for Error Codes
                         resultCode = ResultCode.InvalidAdress;
                         return resultCode.ToString();
                     }

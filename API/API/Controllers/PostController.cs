@@ -5,7 +5,6 @@ using API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Models.Request;
 using Models.Response;
@@ -24,12 +23,16 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IEnumerable<PostInfo>> GetPosts([FromHeader] int postAmount = -1)
         {
-            //List<Post> posts = await _context.Posts.ToListAsync();
-            //posts.RemoveAll(p => p.IsDeleted == true);
-            List<Post> posts = await _context.Posts.Include(x => x.Comments ).ToListAsync();
-            posts.RemoveAll(p => p.IsDeleted == true);
-            var postinfos = from post in _context.Posts
-                            where post.IsDeleted == false
+            // REVIEW (Zoli):
+            // filter deleted posts on reading from repo, not after (ex: Where(x=>x.IsDeleted == false)
+            //List<Post> posts = await _context.Posts.Include(x => x.Comments ).ToListAsync();
+            //List<Post> posts = await _context.Posts.Include(x => x.Comments).Where(x=>x.IsDeleted).ToListAsync();
+            List<Post> posts = await _context.Posts.Include(x => x.Comments)
+                .Where(x => x.IsDeleted==false).OrderByDescending(p => p.Updated).ToListAsync();
+
+            // REVIEW (Zoli):
+            // you aare reading the posts again from the DB (with lazy loading)
+            var postsInfos = from post in posts
                             select new PostInfo()
                             {
                                 Id = post.Id,
@@ -41,9 +44,9 @@ namespace API.Controllers
                                 UserId = post.UserId,
                                 
                             };
+            List<PostInfo> postsInfo = postsInfos.ToList();
             int i = 0;
-            
-            List<PostInfo> postsInfo = await postinfos.ToListAsync<PostInfo>();
+
             foreach(Post post in posts)
             {
                 foreach(var comment in post.Comments)
@@ -62,13 +65,9 @@ namespace API.Controllers
                         postsInfo[i].Comments.Add(comm);
                     }
                 }
-                postsInfo[i].Comments= postsInfo[i].Comments.OrderBy(p => p.Updated).ToList<CommentInfo>();
-                postsInfo[i].Comments.Reverse();
+                postsInfo[i].Comments= postsInfo[i].Comments.OrderByDescending(p => p.Updated).ToList<CommentInfo>();
                 i++;
             }
-            postsInfo = postsInfo.OrderBy(x => x.Updated).ToList<PostInfo>();
-            postsInfo.Reverse();
-            //List<PostInfo> posts = await postinfos.ToListAsync<PostInfo>();
             if (postAmount < 0)
                 return postsInfo;
 
@@ -82,6 +81,7 @@ namespace API.Controllers
         public async Task<IActionResult> GetPostByid(Guid id)
         {
             var post = await _context.Posts.FirstOrDefaultAsync(p=>p.Id==id && p.IsDeleted==false);
+            if(post == null) return NotFound();
             PostInfo postInfo = new PostInfo()
             {
                 Author = post.Author,
@@ -94,17 +94,22 @@ namespace API.Controllers
                 
 
             };
-            return post == null ? NotFound() : Ok(postInfo);
+            return  Ok(postInfo);
 
         }
         [HttpGet("{id}/comments")]
         [ProducesResponseType(typeof(PostInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetCommentsByid(Guid id)
+        public async Task<IActionResult> GetCommentsByPostid(Guid id)
         {
+            // REVIEW (Zoli): 
+            // is it the .Single() linq function the right method to use here?
+            // READ ABOUT: Linq functions
+
             //var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
-            var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id && x.IsDeleted == false);
-            posttester.Comments.RemoveAll(c => c.IsDeleted == true);
+            var posttester = await _context.Posts.Include(x => x.Comments).SingleAsync(x => x.Id == id && x.IsDeleted == false);
+            if(posttester == null) return NotFound();
+            //posttester.Comments.RemoveAll(c => c.IsDeleted == true);
             PostInfo postcomments = new PostInfo()
             {
                 Author = posttester.Author,
@@ -117,22 +122,24 @@ namespace API.Controllers
             };
                 foreach (var comment in posttester.Comments)
                 {
-                    CommentInfo commentinfo = new CommentInfo()
+                    if (comment.IsDeleted == false)
                     {
-                        Author = comment.Author,
-                        Body = comment.CommentBody,
-                        Created = comment.Created,
-                        Updated = comment.Updated,
-                        Id = comment.Id,
-                        UserId = comment.UserId,
-                        PostId = comment.PostId
-                    };
-                
-                    postcomments.Comments.Add(commentinfo);
+                        CommentInfo commentinfo = new CommentInfo()
+                        {
+                            Author = comment.Author,
+                            Body = comment.CommentBody,
+                            Created = comment.Created,
+                            Updated = comment.Updated,
+                            Id = comment.Id,
+                            UserId = comment.UserId,
+                            PostId = comment.PostId
+                        };
+
+                        postcomments.Comments.Add(commentinfo);
+                    }
                 }
-            postcomments.Comments = postcomments.Comments.OrderBy(c => c.Updated).ToList<CommentInfo>();
-            postcomments.Comments.Reverse();
-            return posttester == null ? NotFound() : Ok(postcomments);
+            postcomments.Comments = postcomments.Comments.OrderByDescending(c => c.Updated).ToList<CommentInfo>();
+            return Ok(postcomments);
 
         }
 
@@ -171,7 +178,7 @@ namespace API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> UpdatePost(Guid id,[FromBody] string newDesciption)
         {
-            //var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+            
             
             var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false 
             //&&p.User.UserName == userclaim.Value
@@ -222,6 +229,9 @@ namespace API.Controllers
                 if (!userclaim.Value.Equals(user.UserName))
                     return BadRequest("Not his post");
             }
+            // REVIEW (Zoli): 
+            // is it the .Single() linq function the right method to use here?
+            // READ ABOUT: Linq functions
             var posttester = _context.Posts.Include(x => x.Comments).Single(x => x.Id == id && x.IsDeleted == false);
             for(int i=0; i<posttester.Comments.Count;++i)
             {

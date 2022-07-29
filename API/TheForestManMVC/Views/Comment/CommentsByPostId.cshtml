@@ -9,161 +9,156 @@
 
 <h1>Comments of post</h1>
 
-<table>
-    <h4>PostInfo</h4>
-    <hr />
-    <dl class="row">
-         <dt class = "col-sm-2">
+
+<h4>PostInfo</h4>
+<hr />
+<dl class="row">
+        <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.Author)
+    </dt>
+    <dd class = "col-sm-10">
+        @if(!Model.Author.Equals("User Deleted"))
+        {
+        @Html.ActionLink($"{@Model.Author}","AboutUser","User",new{
+                            @id = Model.UserId}, null)
+        }
+        else
+        {
             @Html.DisplayNameFor(model => model.Author)
-        </dt>
-        <dd class = "col-sm-10">
-            @if(!Model.Author.Equals("User Deleted"))
+        }
+    </dd>
+    <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.Title)
+    </dt>
+    <dd class = "col-sm-10">
+        @Html.DisplayFor(model => model.Title)
+    </dd>
+       
+    <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.Body)
+    </dt>
+    <dd class = "col-sm-10">
+        @Html.DisplayFor(model => model.Body)
+    </dd>
+        
+    <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.Created)
+    </dt>
+    <dd class = "col-sm-10">
+        @Html.DisplayFor(model => model.Created)
+    </dd>
+    <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.Updated)
+    </dt>
+    <dd class = "col-sm-10">
+        @Html.DisplayFor(model => model.Updated)
+    </dd>
+       
+    <dd>
+        <div class="row">
+            <div class="col-md-4">
+                @{
+                    var token = Context.Request.Cookies["token3"];
+                    @if (token != null && Model.UserId != null)
+                    {
+                        var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                        var responseToken = JsonSerializer.Deserialize<UserToken>(
+                            token, jsonSerializerOptions);
+                        @if (responseToken.UserId == Model.UserId)
+                        {
+                        <div>
+                            @Html.ActionLink("Edit", "Edit","Home", new { @id = Model.Id,@body=Model.Body}) |
+                            @Html.ActionLink("Delete", "Delete","Home", new { @id = Model.Id,@body= Model.Body })
+                        </div>
+                        }
+                    }
+                }
+                    
+                <form asp-controller="Comment" asp-action="CreateComment">
+                    <p><h1>Add a comment</h1></p>
+                    @if(Context.Request.Cookies["token3"]!=null)
+                    {
+                        <input type="radio" name="isAnonyme" value="Anonyme" id="anonyme" />
+                        <label for="anonyme"> Comment as Anonyme</label><br>
+                    }
+                    <div class="input-group"> 
+                        <input type="text" placeholder='(Comment)' name="commentBody" class="form-control" required >
+                        <span class="input-group-btn">
+                        <input type="submit" value="Post" class="btn btn-primary" />
+                    </span>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label((string)ViewBag.ErrorUser)
+                    </div>
+                </form>
+            </div>
+        </div>
+    <dt class = "col-sm-2">
+        @Html.Label("Comments:")
+    </dt>
+    
+</dl>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Comments[0].Author)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Comments[0].Body)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Comments[0].Created)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Comments[0].Updated)
+        </th>
+        <th>
+
+        </th>
+    </tr>
+    @for(int i=0;i<Model.Comments.Count;++i)
+    {
+        <tr>
+        <td>
+            @if(!Model.Comments[i].Author.Equals("User Deleted") && Model.Comments[i].UserId!=null)
             {
-            @Html.ActionLink($"{@Model.Author}","AboutUser","User",new{
-                                @id = Model.UserId}, null)
+                @Html.ActionLink($"{@Model.Comments[i].Author}","AboutUser","User",new{
+                        @id = Model.Comments[i].UserId}, null)
             }
             else
             {
-                @Html.DisplayNameFor(model => model.Author)
+                @Html.DisplayFor(model => model.Comments[i].Author)
             }
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-       
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Body)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Body)
-        </dd>
-        
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Created)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Created)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Updated)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Updated)
-        </dd>
-       
-        <dd>
-            <div class="row">
-                <div class="col-md-4">
-                    @{
-                            
-                            @if (Context.Request.Cookies["token3"] != null && Model.UserId!=null)
-                            {
-                                var token = Context.Request.Cookies["token3"];
-                                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                                    token, jsonSerializerOptions);
-                            @if (responseToken.UserId == Model.UserId)
-                            {
-                                <div>
-                                    @Html.ActionLink("Edit", "Edit","Home", new { @id = Model.Id,@body=Model.Body}) |
-                                    @Html.ActionLink("Delete", "Delete","Home", new { @id = Model.Id,@body= Model.Body })
-                                </div>
-                            }
-                            }
-                        }
-                    
-                    <form asp-controller="Comment" asp-action="CreateComment">
-                        <p><h1>Add a comment</h1></p>
-                        @if(Context.Request.Cookies["token3"]!=null)
-                        {
-                            <input type="radio" name="isAnonyme" value="Anonyme" id="anonyme" />
-                            <label for="anonyme"> Comment as Anonyme</label><br>
-                        }
-                        <div class="input-group">
-                            
-                            <input type="text" placeholder='"(Comment)")' name="commentBody" class="form-control" required >
-                            <span class="input-group-btn">
-                            <input type="submit" value="Post" class="btn btn-primary" />
-                        </span>
-                        </div>
-            
-            
-                        <div class="form-group">
-                        @Html.Label((string)ViewBag.ErrorUser)
-                
-                        </div>
-                    </form>
-                </div>
-            </div>
-        <dt class = "col-sm-2">
-            @Html.Label("Comments:")
-        </dt>
-        <table class="table">
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Comments[0].Author)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Comments[0].Body)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Comments[0].Created)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Comments[0].Updated)
-                </th>
-                <th>
-
-                </th>
-            </tr>
-            @for(int i=0;i<Model.Comments.Count;++i)
-            {
-                <tr>
-                <td>
-                    @if(!Model.Comments[i].Author.Equals("User Deleted") && Model.Comments[i].UserId!=null)
-                    {
-                        @Html.ActionLink($"{@Model.Comments[i].Author}","AboutUser","User",new{
-                                @id = Model.Comments[i].UserId}, null)
-                    }
-                    else
-                    {
-                        @Html.DisplayFor(model => model.Comments[i].Author)
-                    }
-                </td>
+        </td>
                    
-                <td>
-                    @Html.DisplayFor(model => model.Comments[i].Body)
-                </td>
-                <td> 
-                    @Html.DisplayFor(model => model.Comments[i].Created)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.Comments[i].Updated)
-                </td>
-                <td>
-                    @if(Context.Request.Cookies["token3"]!=null && Model.Comments[i].UserId!=null 
-                    )
-                    {
-                        var token = Context.Request.Cookies["token3"];
-                                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                                    token, jsonSerializerOptions);
-                        @if(responseToken.UserId == Model.Comments[i].UserId)
-                        {
-                            <div>
-                            @Html.ActionLink("Edit", "Edit", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body,@postId=@Model.Id}) |
-                            @Html.ActionLink("Delete", "Delete", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body })
-                            </div>
-                        }
-                    }
-                </td>
+        <td>
+            @Html.DisplayFor(model => model.Comments[i].Body)
+        </td>
+        <td> 
+            @Html.DisplayFor(model => model.Comments[i].Created)
+        </td>
+        <td>
+            @Html.DisplayFor(model => model.Comments[i].Updated)
+        </td>
+        <td>
                 
-                </tr>
+            @{
+                token = Context.Request.Cookies["token3"];
+                @if(token!=null && Model.Comments[i].UserId!=null)
+                {
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    @if(responseToken.UserId == Model.Comments[i].UserId)
+                    {
+                        <div>
+                        @Html.ActionLink("Edit", "Edit", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body,@postId=@Model.Id}) |
+                        @Html.ActionLink("Delete", "Delete", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body })
+                        </div>
+                    }
+                }
             }
-        </table>
-        </dd>
-    </dl>
-</div>
+        </td> 
+        </tr>
+    }
+</table>

@@ -3,7 +3,7 @@ using API.Models;
 
 namespace API.Data
 {
-    //TODO: improper name, doesn't describe the context
+
     public class SiteDbContext: DbContext
     {
         public SiteDbContext(DbContextOptions<SiteDbContext> options)
@@ -11,7 +11,6 @@ namespace API.Data
         {
         }
 
-        //TODO: confusing comment
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

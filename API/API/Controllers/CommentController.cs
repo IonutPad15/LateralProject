@@ -42,6 +42,7 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IEnumerable<CommentInfo>> GetComments()
         {
+
             var comments = from comment in _context.Comments
                            where comment.IsDeleted == false
                            select new CommentInfo()
@@ -54,7 +55,7 @@ namespace API.Controllers
                                UserId = comment.UserId
                            };
             return comments;
-            
+
         }
         
         [HttpPost("loggedin")]
@@ -114,20 +115,14 @@ namespace API.Controllers
             }
             var comment = _context.Comments.FirstOrDefault(c => c.Id == id && c.IsDeleted == false);
             if (comment == null) return NotFound();
-            var user = await _context.Users.FirstOrDefaultAsync(u=> u.Id ==comment.UserId && u.IsDeleted==false
-            &&userclaim.Value.Equals(comment.Author)
-            );
-            if(user==null)
+            // REVIEW (Zoli):
+            // Get used to arrange the code (format document) to have a clean, readble code
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == comment.UserId &&
+                u.IsDeleted == false && userclaim.Value.Equals(comment.Author));
+            if (user == null)
             {
                 return BadRequest("Not your comment");
             }
-            
-            
-            //if (userclaim != null)
-            //{
-            //    if (!userclaim.Value.Equals(user.UserName))
-            //        return BadRequest("Not his post");
-            //}
             comment.CommentBody = newBody;
             comment.Updated = DateTime.Now;
             CommentInfo commentInfo = new CommentInfo()

@@ -14,7 +14,6 @@ namespace TheForestManMVC.Controllers
         private readonly ILogger<HomeController> _logger;
         public static readonly string url = "https://localhost:7083/api";
 
-        private static Guid postId;
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
@@ -47,19 +46,23 @@ namespace TheForestManMVC.Controllers
             using(HttpClient client = new HttpClient())
             {
                 var token = Request.Cookies["token3"];
-                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                    token, jsonSerializerOptions);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    responseToken.Token);
-                PostRequest postRequest = new PostRequest()
+                if (token != null)
                 {
-                    Body = postBody,
-                    Title = postTitle
-                };
-                HttpResponseMessage response = await client.PostAsJsonAsync($"{url}/post", postRequest);
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                        responseToken.Token);
+                    PostRequest postRequest = new PostRequest()
+                    {
+                        Body = postBody,
+                        Title = postTitle
+                    };
+                    HttpResponseMessage response = await client.PostAsJsonAsync($"{url}/post", postRequest);
+                }
                 return RedirectToAction("Index");
+                
             }
         }
         public async Task<ActionResult> EditPost(Guid id, string body)
@@ -67,14 +70,17 @@ namespace TheForestManMVC.Controllers
             using (HttpClient client = new HttpClient())
             {
                 var token = Request.Cookies["token3"];
-                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                    token, jsonSerializerOptions);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    responseToken.Token);
+                if (token != null)
+                {
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                        responseToken.Token);
 
-                HttpResponseMessage response = await client.PutAsJsonAsync($"{url}/post/{id}", body);
+                    HttpResponseMessage response = await client.PutAsJsonAsync($"{url}/post/{id}", body);
+                }
                 return RedirectToAction("Index");
             }
         }
@@ -92,20 +98,23 @@ namespace TheForestManMVC.Controllers
             using (HttpClient client = new HttpClient())
             {
                 var token = Request.Cookies["token3"];
-                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                    token, jsonSerializerOptions);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    responseToken.Token);
-                HttpResponseMessage postResponse = await client.DeleteAsync($"{HomeController.url}/post/{postInfo.Id}");
-
-                if (postResponse.StatusCode == HttpStatusCode.NoContent)
+                if (token != null)
                 {
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                        responseToken.Token);
+                    HttpResponseMessage postResponse = await client.DeleteAsync($"{HomeController.url}/post/{postInfo.Id}");
 
-                    return RedirectToAction("Index");
+                    if (postResponse.StatusCode == HttpStatusCode.NoContent)
+                    {
+
+                        return RedirectToAction("Index");
+                    }
                 }
-                else return Content("Something went wrong");
+                return Content("Something went wrong");
             }
         }
         public async Task<ActionResult> Delete(Guid id)
@@ -113,21 +122,24 @@ namespace TheForestManMVC.Controllers
             using (HttpClient client = new HttpClient())
             {
                 var token = Request.Cookies["token3"];
-                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                    token, jsonSerializerOptions);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    responseToken.Token);
-                HttpResponseMessage postResponse = await client.GetAsync($"{HomeController.url}/post/{id}");
-
-                if (postResponse.IsSuccessStatusCode)
+                if (token != null)
                 {
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                        responseToken.Token);
+                    HttpResponseMessage postResponse = await client.GetAsync($"{HomeController.url}/post/{id}");
 
-                    var response = await postResponse.Content.ReadAsStringAsync();
-                    PostInfo postInfo = JsonSerializer.Deserialize<PostInfo>(response,
-                            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-                    return View(postInfo);
+                    if (postResponse.IsSuccessStatusCode)
+                    {
+
+                        var response = await postResponse.Content.ReadAsStringAsync();
+                        PostInfo postInfo = JsonSerializer.Deserialize<PostInfo>(response,
+                                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+                        return View(postInfo);
+                    }
                 }
             }
             return View();
