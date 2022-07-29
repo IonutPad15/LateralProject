@@ -20,10 +20,10 @@
                 token, jsonSerializerOptions);
         @if(responseToken.UserId == Model.Id)
         {
-         <div>
+         
              @Html.ActionLink("ChangePassword", "Edit","User") |
              @Html.ActionLink("DeleteAccount", "Delete","User")
-         </div>
+         
         }
         }
     </h5>

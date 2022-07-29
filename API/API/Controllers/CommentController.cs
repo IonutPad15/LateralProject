@@ -24,6 +24,7 @@ namespace API.Controllers
         public async Task<ActionResult> GetCommentById(Guid id)
         {
             var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted == false);
+
             CommentInfo commentInfo = new CommentInfo()
             {
                 Id = comment.Id,
@@ -41,22 +42,6 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IEnumerable<CommentInfo>> GetComments()
         {
-            //List<Comment> comments = await _context.Comments.ToListAsync();
-            // comments.RemoveAll(c => c.IsDeleted == true);
-            //List<CommentInfo> commentsinfo= new List<CommentInfo>();
-            //foreach (Comment comment in comments)
-            //{
-            //    CommentInfo commentInfo = new CommentInfo()
-            //    {
-            //        Created = comment.Created,
-            //        Id=comment.Id,
-            //        Updated = comment.Updated,
-            //        Author = comment.Author,
-            //        Body = comment.CommentBody
-            //    };
-            //    commentsinfo.Add(commentInfo);
-            //}
-            //return commentsinfo;
             var comments = from comment in _context.Comments
                            where comment.IsDeleted == false
                            select new CommentInfo()
@@ -69,9 +54,7 @@ namespace API.Controllers
                                UserId = comment.UserId
                            };
             return comments;
-            List<CommentInfo> commentInfos = await comments.ToListAsync<CommentInfo>();
-
-            return commentInfos;
+            
         }
         
         [HttpPost("loggedin")]
@@ -85,20 +68,20 @@ namespace API.Controllers
             if (userclaim != null)
             {
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userclaim.Value && u.IsDeleted == false);
-                comment.CommentBody = commentInfo.Body = commentRequest.Body;
-                comment.Author = commentInfo.Author = user.UserName;
-                comment.UserId = user.Id;
-                comment.PostId = commentRequest.PostId;
-                comment.Updated = commentInfo.Updated = DateTime.Now;
-                comment.Created = commentInfo.Created = DateTime.Now;
-                await _context.Comments.AddAsync(comment);
-                await _context.SaveChangesAsync();
-                return Ok(commentInfo);
+                if (user != null)
+                {
+                    comment.CommentBody = commentInfo.Body = commentRequest.Body;
+                    comment.Author = commentInfo.Author = user.UserName;
+                    comment.UserId = user.Id;
+                    comment.PostId = commentRequest.PostId;
+                    comment.Updated = commentInfo.Updated = DateTime.Now;
+                    comment.Created = commentInfo.Created = DateTime.Now;
+                    await _context.Comments.AddAsync(comment);
+                    await _context.SaveChangesAsync();
+                    return Ok(commentInfo);
+                }
             }
-            else
-            {
                 return BadRequest();
-            }
 
         }
         [HttpPost("loggedout")]
