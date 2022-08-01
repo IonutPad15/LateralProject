@@ -24,7 +24,6 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> GetCommentById(Guid id)
         {
-            //var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted == false);
             var comment = await CommentService.GetCommentById(_context,id);
             if(comment == null) return NotFound(); 
             CommentInfo commentInfo = new CommentInfo()
@@ -34,31 +33,13 @@ namespace API.Controllers
                 Updated = comment.Updated,
                 UserId = comment.UserId,
                 Author = comment.Author,
-                Body = comment.CommentBody,
+                CommentBody = comment.CommentBody,
                 PostId = comment.PostId
 
             };
             return Ok(commentInfo);
 
         }
-        //[HttpGet]
-        //public async Task<IEnumerable<CommentInfo>> GetComments()
-        //{
-
-        //    var comments = from comment in _context.Comments
-        //                   where comment.IsDeleted == false
-        //                   select new CommentInfo()
-        //                   {
-        //                       Created = comment.Created,
-        //                       Id = comment.Id,
-        //                       Updated = comment.Updated,
-        //                       Author = comment.Author,
-        //                       Body = comment.CommentBody,
-        //                       UserId = comment.UserId
-        //                   };
-        //    return comments;
-
-        //}
         
         [HttpPost("loggedin")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -70,7 +51,7 @@ namespace API.Controllers
             
             if (userclaim != null)
             {
-                //var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userclaim.Value && u.IsDeleted == false);
+                
                 var user = await UserService.GetUserByUsername(_context, userclaim.Value);
                 if (user != null)
                 {
@@ -80,8 +61,7 @@ namespace API.Controllers
                     comment.PostId = commentRequest.PostId;
                     comment.Updated = DateTime.Now;
                     comment.Created = DateTime.Now;
-                    //await _context.Comments.AddAsync(comment);
-                    //await _context.SaveChangesAsync();
+                    
                     var codeResult = await CommentService.CreateComment(_context, comment);
                     if (codeResult == DbCodes.Codes.Error)
                         return BadRequest("Something went wrong");
@@ -103,8 +83,7 @@ namespace API.Controllers
             comment.PostId = commentRequest.PostId;
             comment.Updated = DateTime.Now;
             comment.Created = DateTime.Now;
-            //await _context.Comments.AddAsync(comment);
-            //await _context.SaveChangesAsync();
+            
             var codeResult = await CommentService.CreateComment(_context, comment);
             if (codeResult == DbCodes.Codes.Error)
                 return BadRequest("Something went wrong");
@@ -122,13 +101,10 @@ namespace API.Controllers
             {
                 return BadRequest();
             }
-            //var comment = _context.Comments.FirstOrDefault(c => c.Id == id && c.IsDeleted == false);
+            
             var comment = await CommentService.GetCommentById(_context, id);
             if (comment == null) return NotFound();
-            // REVIEW (Zoli):
-            // Get used to arrange the code (format document) to have a clean, readble code
-            //var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == comment.UserId &&
-            //    u.IsDeleted == false && userclaim.Value.Equals(comment.Author));
+            
             var user = UserService.GetUserById(_context, comment.UserId);
             if (user == null || !userclaim.Value.Equals(comment.Author))
             {
@@ -136,15 +112,11 @@ namespace API.Controllers
             }
             comment.CommentBody = newBody;
             comment.Updated = DateTime.Now;
-            
-            //_context.Entry(comment).State = EntityState.Modified;
-            //await _context.SaveChangesAsync();
 
             var codeResult =await CommentService.UpdateComment(_context, comment);
             if (codeResult == DbCodes.Codes.Error)
                 return BadRequest("Something went wrong");
             return Ok();
-            //return Ok(commentInfo);
         }
 
 
@@ -161,7 +133,7 @@ namespace API.Controllers
             {
                 return BadRequest("Anonymous comments cannot be deleted");
             }
-            //var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == commentToDelete.UserId && u.IsDeleted == false);
+            
             var user = await UserService.GetUserById(_context, commentToDelete.UserId);
             if (user == null)
             {
@@ -175,8 +147,7 @@ namespace API.Controllers
                     return BadRequest("Not his post");
             }
             commentToDelete.IsDeleted = true;
-            //_context.Entry(commentToDelete).State = EntityState.Modified;
-            //await _context.SaveChangesAsync();
+            
             var codeResult = await CommentService.UpdateComment(_context, commentToDelete);
             if (codeResult == DbCodes.Codes.Error)
                 return BadRequest("Something went wrong");

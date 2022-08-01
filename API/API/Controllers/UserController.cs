@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Models.Request;
 using Models.Response;
 using API.Services;
-
+using AutoMapper;
 
 namespace API.Controllers
 {
@@ -24,9 +24,18 @@ namespace API.Controllers
         private static Dictionary<string, ValidationCode> userCodes= new Dictionary<string, ValidationCode>();
         private readonly SiteDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly MapperConfiguration config = new MapperConfiguration(cfg => {
+            cfg.CreateMap<User, UserInfo>();
+            cfg.CreateMap<User, UserPostsCommentsInfo>();
+            cfg.CreateMap<Post, PostInfo>();
+            cfg.CreateMap<Comment, CommentInfo>();
+            cfg.CreateMap<UserCode, User>();
+        });
+        private readonly Mapper mapper;
         public UserController(SiteDbContext context, IConfiguration configuration)
         {
             _context = context;
+            mapper = new Mapper(config);
             _configuration = configuration;
 
         }
@@ -34,15 +43,6 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IEnumerable<UserInfo>> GetUsers()
         {
-
-            //var usersinfo = from users in _context.Users
-            //                where users.IsDeleted == false
-            //                select new UserInfo()
-            //                {
-            //                    Id = users.Id,
-            //                    UserName = users.UserName,
-            //                    Email = users.Email
-            //                };
             List<UserInfo> userInfos = await UserService.GetUsers(_context);
                 return userInfos;
             
@@ -51,19 +51,15 @@ namespace API.Controllers
         public async Task<ActionResult> GetUser(Guid id)
         {
 
-            // REVIEW (Zoli): 
-            // why not using singleOrdefault directly on the query?
-            // use null check and NotFound as in the other controllers
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == id && u.IsDeleted == false);
             if (user == null) return NotFound();
-            //List<UserInfo> userInfos = await usersinfo.ToListAsync<UserInfo>();
-            //UserInfo user = userInfos.SingleOrDefault();
-            UserInfo userInfo = new UserInfo()
-            {
-                UserName = user.UserName,
-                Email = user.Email,
-                Id = user.Id
-            };
+            //UserInfo userInfo = new UserInfo()
+            //{
+            //    UserName = user.UserName,
+            //    Email = user.Email,
+            //    Id = user.Id
+            //};
+            UserInfo userInfo = mapper.Map<UserInfo>(user);
             return Ok(userInfo);
 
         }
@@ -74,85 +70,9 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPostsAndCommentsByUserId(Guid id)
         {
-            // REVIEW (Zoli): 
-            // why user is red from repo here, but null check is at the end?
-            
-            //var usertester = await _context.Users.Include(x => x.Posts)
-            //                               .ThenInclude(x => x.Comments)
-            //                               .SingleAsync(x => x.Id == id &&x.IsDeleted == false);
-            //if (usertester == null) return NotFound();
-            //var usercomments = _context.Users.Include(x => x.Comments)
-            //                                    .Single(x => x.Id == id && x.IsDeleted == false);
-
-            var usertester = await UserService.GetPostsAndCommentsByUserId(_context, id);
-            UserPostsCommentsInfo userpostinfo = new UserPostsCommentsInfo()
-            {
-                UserName = usertester.UserName,
-                Email = usertester.Email,
-                Id = usertester.Id,
-                
-            };
-            
-            if(usertester.Posts!=null)
-            foreach(var post in usertester.Posts)
-            {
-                
-                if (post.IsDeleted == false)
-                {
-                    var comments = _context.Posts.Include(x => x.Comments).Single(x => x.Id == post.Id);
-                    PostInfo postInfo = new PostInfo()
-                    {
-                        Id = post.Id,
-                        Created = post.Created,
-                        Author = post.Author,
-                        Body = post.Description,
-                        Title = post.Title,
-                        Updated = post.Updated, 
-                        UserId=post.UserId
-                    };
-                    foreach(var comment in comments.Comments)
-                    {
-                        if (comment.IsDeleted == false)
-                        {
-                            CommentInfo comm = new CommentInfo()
-                            {
-                                Id = comment.Id,
-                                Created = comment.Created,
-                                Updated = comment.Updated,
-                                Author = comment.Author,
-                                Body = comment.CommentBody,
-                                UserId = comment.UserId
-                            };
-                            postInfo.Comments.Add(comm);
-                        }
-                    }
-                    userpostinfo.Posts.Add(postInfo);
-                }
-            }
-            userpostinfo.Posts = userpostinfo.Posts.OrderByDescending(p => p.Updated).ToList<PostInfo>();
-            if(usertester.Comments!=null)
-            foreach (var comment in usertester.Comments)
-            {
-                if (comment.IsDeleted == false)
-                {
-                    CommentInfo commentInfo = new CommentInfo()
-                    {
-                        Id = comment.Id,
-                        Created = comment.Created,
-                        Author = comment.Author,
-                        Body = comment.CommentBody,
-
-                        Updated = comment.Updated
-                        ,UserId =comment.UserId
-                        ,PostId = comment.PostId
-
-                    };
-
-                    userpostinfo.Comments.Add(commentInfo);
-                }
-            }
-            userpostinfo.Comments = userpostinfo.Comments.OrderBy(p => p.Updated).ToList<CommentInfo>();
-            userpostinfo.Comments.Reverse();
+            var usertester = await UserService.GetUserWithPostsAndCommentsByUserId(_context, id);
+            if(usertester == null) return NotFound();
+            UserPostsCommentsInfo userpostinfo = mapper.Map<UserPostsCommentsInfo>(usertester);
             return  Ok(userpostinfo);
 
         }
@@ -186,7 +106,6 @@ namespace API.Controllers
         public async Task<ActionResult> GetRegisterCode([FromQuery] string username,[FromQuery] string email)
         {
             if (username == null || email == null) return BadRequest("username and email are required");
-            //ResultCode code =
             var usernameExists = await UserService.GetUserByUsername(_context, username);
             if (usernameExists == null)
             {
@@ -233,20 +152,20 @@ namespace API.Controllers
                 {
                     HashHelper hashHelper = new HashHelper();
                     string hashedPassword = hashHelper.GetHash(userCode.Password);
-                    User user = new User()
-                    {
-                        UserName = userCode.UserName,
-                        Email = userCode.Email,
-                        Password = hashedPassword,
-                        Id = userCode.Id
-                    };
-                    //await _context.Users.AddAsync(user);
-
-                    //await _context.SaveChangesAsync();
+                    userCode.Password = hashedPassword;
+                    //User user = new User()
+                    //{
+                    //    UserName = userCode.UserName,
+                    //    Email = userCode.Email,
+                    //    Password = hashedPassword,
+                    //    Id = userCode.Id
+                    //};
+                    User user = mapper.Map<User>(userCode);
+                    
                     var codeResult = await UserService.CreateUser(_context, user);
                     if (codeResult == DbCodes.Codes.Error) 
                         return BadRequest("ERROR");
-                    return await BuildToken(user);
+                    return BuildToken(user);
                 }
                 else
                 {
@@ -265,8 +184,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetNewPassCode([FromQuery] string username, [FromQuery] string email)
-        {
-            //var userExists = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username && u.IsDeleted == false && u.Email == email);
+        {  
             var userExists = await UserService.GetUserByUsernameAndEmail(_context, username, email);
             if (userExists != null)
             {
@@ -299,8 +217,6 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Update([FromBody] UserCode userCode)
         {
-            //var userToUpdate = await _context.Users.FirstOrDefaultAsync(u =>
-            //    (u.UserName == userCode.UserName &&  u.Email == userCode.Email) && u.IsDeleted == false);
             var userToUpdate = await UserService.GetUserByUsernameAndEmail(_context, 
                 userCode.UserName, userCode.Email);
             if (userToUpdate == null) return NotFound();
@@ -312,27 +228,16 @@ namespace API.Controllers
                 
                 if (!userclaim.Value.Equals(userToUpdate.UserName) || !emailclaim.Value.Equals(userToUpdate.Email))
                     return BadRequest("Not his account");
-                
-                
+
                 if (userToUpdate == null) return NotFound();
                 HashHelper hashHelper = new HashHelper();
                 string hashedPassword = hashHelper.GetHash(userCode.Password);
-
-
                 userToUpdate.Password = hashedPassword;
-                //_context.Entry(userToUpdate).State = EntityState.Modified;
-                //await _context.SaveChangesAsync();
-                //UserInfo userInfo = new UserInfo()
-                //{
-                //    Id = userToUpdate.Id,
-                //    Email = userToUpdate.Email,
-                //    UserName = userToUpdate.UserName
-                //};
+                
                 var codeResult = await UserService.UpdateUser(_context, userToUpdate);
                 if (codeResult == DbCodes.Codes.Error) return BadRequest("Something went wrong");
                 return Ok();
             }
-            //var userToUpdate = user;
             return NoContent();
         }
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -381,8 +286,6 @@ namespace API.Controllers
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
             {
-                // REVIEW (Zoli): 
-                // you can combine conditions with &&
                 if (userCodes.ContainsKey(username))
                     if (!userclaim.Value.Equals(userToDelete.UserName))
                     return BadRequest("Not his account");
@@ -398,18 +301,10 @@ namespace API.Controllers
                     }
                     else if(code.Code.Equals(codeFromUser))
                     {
-                        // REVIEW (Zoli): 
-                        // lazy loading used, it was intended?
-                        // you can read the posts an comments directly, not through user
-                        // READ ABOUT: EF Linq & lazy loading
-                        //var usertester = _context.Users.Include(x => x.Posts).ThenInclude(x => x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false) ;
-                        //var usercomments = _context.Users.Include(x=>x.Comments).Single(x => x.Id == userToDelete.Id && x.IsDeleted == false);
-                        var usertester = await UserService.GetPostsAndCommentsByUserId(_context, userToDelete.Id);
-                        
-                        
+                        var usertester = await UserService.GetUserWithPostsAndCommentsByUserId(_context, userToDelete.Id);
+                        if (usertester == null) return NotFound();
                         if (usertester.Posts != null)
                         {
-                            usertester.Posts.RemoveAll(p => p.IsDeleted == true);
                             for (int i = 0; i < usertester.Posts.Count; ++i)
                             {
                                 var post = usertester.Posts[i];
@@ -421,7 +316,6 @@ namespace API.Controllers
                         }
                         if (usertester.Comments != null)
                         {
-                            usertester.Comments.RemoveAll(c => c.IsDeleted == true);
                             for (int i = 0; i < usertester.Comments.Count; ++i)
                             {
                                 var comment = usertester.Comments[i];
@@ -431,8 +325,6 @@ namespace API.Controllers
                             }
                         }
                         userToDelete.IsDeleted = true;
-                        //_context.Entry(userToDelete).State = EntityState.Modified;
-                        //await _context.SaveChangesAsync();
                         var codeResult = await UserService.UpdateUser(_context, userToDelete);
                         if (codeResult == DbCodes.Codes.Error)
                             return BadRequest("Something went wrong");
@@ -447,7 +339,7 @@ namespace API.Controllers
             return BadRequest("Eroare");
         }
         [HttpPost("login")]
-        public async Task<ActionResult<UserToken>> Login([FromBody] Credentials credentials)
+        public ActionResult<UserToken> Login([FromBody] Credentials credentials)
         {
             HashHelper hashHelper = new HashHelper();
             string hashedPassword = hashHelper.GetHash(credentials.Password);
@@ -455,35 +347,39 @@ namespace API.Controllers
             && x.Password == hashedPassword
             &&(x.Email==credentials.NameEmail|| x.UserName == credentials.NameEmail));
             if (user == null) return BadRequest("Invalid login attempt");
-            else return await BuildToken(user);
+            else return BuildToken(user);
         }
         
-        private async Task<UserToken> BuildToken(User user)
+        private UserToken BuildToken(User user)
         {
             var expiration = DateTime.Now.AddDays(30);
-            var claims = new List<Claim>()
+            if (user.UserName != null && user.Email != null)
+            {
+                var claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTkey"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTkey"]));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            JwtSecurityToken token = new JwtSecurityToken(
-                issuer: null,
-                audience: null,
-                claims: claims,
-                expires: expiration,
-                signingCredentials: creds);
+                JwtSecurityToken token = new JwtSecurityToken(
+                    issuer: null,
+                    audience: null,
+                    claims: claims,
+                    expires: expiration,
+                    signingCredentials: creds);
 
-            return new UserToken()
-            {
-                Token = new JwtSecurityTokenHandler().WriteToken(token),
-                ExpirationDate = expiration,
-                UserId = user.Id
-            };
+                return new UserToken()
+                {
+                    Token = new JwtSecurityTokenHandler().WriteToken(token),
+                    ExpirationDate = expiration,
+                    UserId = user.Id
+                };
 
+            }
+            return new UserToken();
         }
     }
 }

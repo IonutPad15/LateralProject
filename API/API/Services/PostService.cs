@@ -8,16 +8,18 @@ namespace API.Services
     {
         public static async Task<List<Post>> GetPosts(SiteDbContext _context)
         {
-            return await _context.Posts.Include(x => x.Comments)
-                .Where(x => x.IsDeleted == false).OrderByDescending(p => p.Updated).ToListAsync();
+            return await 
+            _context.Posts.Include(x => x.Comments.Where(c =>  c.IsDeleted == false).OrderByDescending(c=> c.Updated))
+            .Where(p => p.IsDeleted == false).OrderByDescending(p => p.Updated).ToListAsync();
         }
-        public static async Task<Post> GetPostById(SiteDbContext _context, Guid id)
+        public static async Task<Post?> GetPostById(SiteDbContext _context, Guid id)
         {
             return await _context.Posts.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
         }
-        public static async Task<Post?> GetCommentsByPostId(SiteDbContext _context, Guid id)
+        public static async Task<Post?> GetPostWithCommentsByPostId(SiteDbContext _context, Guid id)
         {
-            return await _context.Posts.Include(x => x.Comments).FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
+            return await _context.Posts.Include(x => x.Comments.Where(c => c.IsDeleted == false).OrderByDescending(c=>c.Updated))
+            .FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
         }
         public static async Task<DbCodes.Codes> CreatePost(SiteDbContext _context, Post post)
         {

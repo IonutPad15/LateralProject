@@ -18,9 +18,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<SiteDbContext>(
     o => o.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")));
-
-
-               
+            
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

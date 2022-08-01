@@ -34,8 +34,8 @@ namespace API.Data
             //    .WithMany(p => p.Posts)
             //    .HasForeignKey(ui => ui.UserId);
         }
-        public DbSet<User> Users { get; set; }
-        public DbSet<Post> Posts { get; set; }
-        public DbSet<Comment> Comments { get; set; }
+        public DbSet<User> Users => Set<User>();
+        public DbSet<Post> Posts => Set<Post>();
+        public DbSet<Comment> Comments => Set<Comment>();
     }
 }

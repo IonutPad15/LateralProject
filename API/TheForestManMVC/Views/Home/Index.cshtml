@@ -33,13 +33,16 @@
 <table class="table">
     <tr>
         <th>
+            Votes
+        </th>
+        <th>
             @Html.DisplayNameFor(model => model.Author)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Title)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Body)
+            @Html.DisplayNameFor(model => model.Description)
         </th>
             <th>
             @Html.Label("Comments:")
@@ -48,6 +51,9 @@
     @foreach(var item in Model)
     {
     <tr>
+        <td>
+          
+        </td>
         <td>
             @if(!item.Author.Equals("[User Deleted]"))
         {
@@ -64,7 +70,7 @@
             @Html.DisplayFor(modelItem =>item.Title)
         </td>
         <td>
-            @Html.DisplayFor(modelItem =>item.Body)
+            @Html.DisplayFor(modelItem =>item.Description)
         </td>            
         <td> 
             @Html.ActionLink($"{item.Comments.Count}","CommentsByPostId","Comment",new{
@@ -79,11 +85,11 @@
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var responseToken = JsonSerializer.Deserialize<UserToken>(
                 token, jsonSerializerOptions);
-            @if(responseToken.UserId == @item.UserId)
+            @if(responseToken!= null && responseToken.UserId == @item.UserId)
             {
                 <div>
-                    @Html.ActionLink("Edit", "Edit", new { @id = @item.Id,@body=@item.Body}) |
-                    @Html.ActionLink("Delete", "Delete", new { @id = @item.Id,@body= @item.Body })
+                    @Html.ActionLink("Edit", "Edit", new { @id = @item.Id,@body=@item.Description}) |
+                    @Html.ActionLink("Delete", "Delete", new { @id = @item.Id,@body= @item.Description })
                 </div>
             }
         }

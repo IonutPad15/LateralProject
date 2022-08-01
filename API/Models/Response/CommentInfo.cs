@@ -10,7 +10,7 @@ namespace Models.Response
     {
         public Guid Id { get; set; }
         public string Author { get; set; }
-        public string Body { get; set; }
+        public string CommentBody { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
         public Guid? UserId { get; set; }
@@ -18,7 +18,7 @@ namespace Models.Response
         override
         public string ToString()
         {
-            string comm = "      Author:" + Author + "\n      Comment:" + Body + "\n";
+            string comm = "      Author:" + Author + "\n      Comment:" + CommentBody + "\n";
             return comm;
         }
     }

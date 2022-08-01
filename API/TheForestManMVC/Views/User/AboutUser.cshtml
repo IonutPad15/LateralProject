@@ -14,18 +14,19 @@
     <h5>
         @{
             var token = Context.Request.Cookies["token3"];
-            @if(Context.Request.Cookies["token3"] != null)
+            @if(token != null)
             {
             
                 var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
                 var responseToken = JsonSerializer.Deserialize<UserToken>(
                     token, jsonSerializerOptions);
-                @if(responseToken.UserId == Model.Id)
+
+                @if(responseToken!= null && responseToken.UserId == Model.Id)
                 {
-                    <div>
+                    <group>
                          @Html.ActionLink("ChangePassword", "Edit","User") |
                          @Html.ActionLink("DeleteAccount", "Delete","User")
-                    </div>
+                    </group>
                 }
             }
         }
@@ -58,7 +59,7 @@
                     @Html.DisplayNameFor(model => model.Posts[0].Title)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.Posts[0].Body)
+                    @Html.DisplayNameFor(model => model.Posts[0].Description)
                 </th>
             </tr>
            @foreach(var item in Model.Posts)
@@ -71,7 +72,7 @@
                     @Html.DisplayFor(modelItem =>item.Title)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem =>item.Body)
+                    @Html.DisplayFor(modelItem =>item.Description)
                 </td>
                 <td>
                     
@@ -88,11 +89,11 @@
                             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
                             var responseToken = JsonSerializer.Deserialize<UserToken>(
                                 token, jsonSerializerOptions);
-                                @if (responseToken.UserId == Model.Id)
+                                @if (responseToken!= null &&  responseToken.UserId == Model.Id)
                             {
                                     <div>
-                                        @Html.ActionLink("Edit", "Edit","Home", new { @id = @item.Id,@body=@item.Body}) |
-                                        @Html.ActionLink("Delete", "Delete","Home", new { @id = @item.Id,@body= @item.Body })
+                                        @Html.ActionLink("Edit", "Edit","Home", new { @id = @item.Id,@body=@item.Description}) |
+                                        @Html.ActionLink("Delete", "Delete","Home", new { @id = @item.Id,@body= @item.Description })
                                     </div>
                             }
                         }
@@ -110,7 +111,7 @@
                     @Html.DisplayNameFor(model => model.Comments[0].Author)
                 </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.Comments[0].Body)
+                        @Html.DisplayNameFor(model => model.Comments[0].CommentBody)
                     </th>
                 <th>
                     @Html.DisplayNameFor(model => model.Comments[0].Created)
@@ -121,13 +122,13 @@
             </tr>
             @for(int i=0;i<Model.Comments.Count;++i)
             {
-                <tr>
+            <tr>
                 <td>
                     @Html.DisplayFor(model => model.Comments[i].Author)
                 </td>
                    
                 <td>
-                    @Html.DisplayFor(model => model.Comments[i].Body)
+                    @Html.DisplayFor(model => model.Comments[i].CommentBody)
                 </td>
                 <td> 
                     @Html.DisplayFor(model => model.Comments[i].Created)
@@ -144,18 +145,18 @@
                             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
                             var responseToken = JsonSerializer.Deserialize<UserToken>(
                                 token, jsonSerializerOptions);
-                                @if (responseToken.UserId == Model.Id)
+                            @if (responseToken!= null &&  responseToken.UserId == Model.Id)
                             {
-                                    <div>
-                                        @Html.ActionLink("Edit", "Edit","Comment", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body,@userId=@Model.Id}) |
-                                        @Html.ActionLink("Delete", "Delete","Comment", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].Body })
-                                    </div>
+                                <div>
+                                    @Html.ActionLink("Edit", "Edit","Comment", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].CommentBody,@userId=@Model.Id}) |
+                                    @Html.ActionLink("Delete", "Delete","Comment", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].CommentBody })
+                                </div>
                             }
 
                         }
-                        }
-                    </td> 
-             </tr>
+                    }
+                </td> 
+            </tr>
 
             }
         </table>

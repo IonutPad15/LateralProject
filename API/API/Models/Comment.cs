@@ -14,7 +14,7 @@ namespace API.Models
         [ForeignKey("Post")]
         public Guid? PostId { get; set; }
         [Required]
-        public string CommentBody { get; set; }
+        public string? CommentBody { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
         public bool IsDeleted { get; set; }

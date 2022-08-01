@@ -2,35 +2,44 @@
 using API.Models;
 using Microsoft.EntityFrameworkCore;
 using Models.Response;
+using AutoMapper;
 
 namespace API.Services
 {
     public class UserService
     {
-        public static async Task<List<UserInfo>> GetUsers(SiteDbContext _context)
+        private static readonly MapperConfiguration? config = new MapperConfiguration(cfg =>
+                    cfg.CreateMap<User, UserInfo>()
+                );
+        public UserService()
         {
             
-            var userinfo = await _context.Users.Where(u=> u.IsDeleted == false)
-                .Select(u => new UserInfo()
-            {
-                UserName = u.UserName,
-                Email = u.Email,
-                Id = u.Id
-            }).ToListAsync();
-            return userinfo;
+        }
+        public static async Task<List<UserInfo>> GetUsers(SiteDbContext _context)
+        {
+
+            //var userinfo = await _context.Users.Where(u=> u.IsDeleted == false)
+            //    .Select(u => new UserInfo()
+            //{
+            //    UserName = u.UserName,
+            //    Email = u.Email,
+            //    Id = u.Id
+            //}).ToListAsync();
+            //return userinfo;
+            var users = await _context.Users.Where(u => u.IsDeleted == false).ToListAsync();
+            var mapper = new Mapper(config);
+            return mapper.Map<List<UserInfo>>(users);
         }
         public static async Task<User?> GetUserById(SiteDbContext _context, Guid? id)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.IsDeleted == false && u.Id == id);
         }
-        public static async Task<User?> GetPostsAndCommentsByUserId(SiteDbContext _context, Guid id)
+        public static async Task<User?> GetUserWithPostsAndCommentsByUserId(SiteDbContext _context, Guid id)
         {
-            var usertester = await _context.Users.Include(x => x.Posts)
-                                           .ThenInclude(x => x.Comments)
-                                           .SingleAsync(x => x.Id == id && x.IsDeleted == false);
-            if (usertester == null) return null;
-            var usercomments = _context.Users.Include(x => x.Comments)
-                                                .Single(x => x.Id == id && x.IsDeleted == false);
+            var usertester = await _context.Users.Include(x => x.Posts.Where(p => p.IsDeleted == false).OrderByDescending(p => p.Updated))
+                                           .ThenInclude(x => x.Comments.Where(c => c.IsDeleted == false).OrderByDescending(c => c.Updated))
+                                           .Include(x => x.Comments.Where(c => c.IsDeleted == false).OrderByDescending(c => c.Updated))
+                                           .FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
             return usertester;
         }
         public static async Task<User?> GetUserByUsername(SiteDbContext _context, string username)

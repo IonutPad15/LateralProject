@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "ajtRZZge8chcGbZnQL4QIdZwEEk5fcbIDLxWIHI5RCBbB82WQFEGTkTzHf8ce5c8KyoaFvikmmrVzCubAct68A==",
+  "dgSpecHash": "VZbQD8h4yV2KlzF/WgO1+F7stbj7VRwQLwCUCKscXjZacWLkulgwcblFJZWta80g438Ce1S4I06+Em+YbvkeQA==",
   "success": true,
   "projectFilePath": "C:\\Ionut\\cc\\LateralProject\\LateralProject\\API\\API\\API.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\lateral\\.nuget\\packages\\automapper\\11.0.1\\automapper.11.0.1.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\6.0.7\\microsoft.aspnetcore.authentication.jwtbearer.6.0.7.nupkg.sha512",
-    "C:\\Users\\lateral\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
+    "C:\\Users\\lateral\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\microsoft.data.sqlclient\\2.1.4\\microsoft.data.sqlclient.2.1.4.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\microsoft.data.sqlclient.sni.runtime\\2.1.1\\microsoft.data.sqlclient.sni.runtime.2.1.1.nupkg.sha512",
     "C:\\Users\\lateral\\.nuget\\packages\\microsoft.entityframeworkcore\\6.0.7\\microsoft.entityframeworkcore.6.0.7.nupkg.sha512",

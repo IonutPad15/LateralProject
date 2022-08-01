@@ -13,10 +13,10 @@ namespace API.Models
         //public string User { get; set; }
         [Required]
         [MaxLength(100,ErrorMessage ="Title too long")]
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         [Required]
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
         //lista de comentarii cu foreing key
@@ -25,7 +25,7 @@ namespace API.Models
         [ForeignKey("User")]
         public Guid? UserId { get; set; }
         public string? Author { get; set; }
-        public List<Comment> Comments { get; set; }
+        public List<Comment> Comments { get; set; } = null!;
         public bool IsDeleted { get; set; }
         
         //public UserInfo User { get; set; }

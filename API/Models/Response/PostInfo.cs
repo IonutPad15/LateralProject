@@ -14,7 +14,7 @@ namespace Models.Response
         }
         public Guid Id { get; set; }
         public string Title { get; set; }
-        public string Body { get; set; }
+        public string Description { get; set; }
         public string Author { get; set; }
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
@@ -23,7 +23,7 @@ namespace Models.Response
         override
         public string ToString()
         {
-            string post = "User:" + Author + "\n" + Title + "\n" + Body + "\n";
+            string post = "User:" + Author + "\n" + Title + "\n" + Description + "\n";
             return post;
         }
         public string PostWithComments()

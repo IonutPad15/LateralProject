@@ -22,7 +22,7 @@ namespace TheForestManMVC.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     var post = await response.Content.ReadFromJsonAsync<PostInfo>();
-
+                    if(post != null)
                     return post;
                 }
             }
@@ -63,17 +63,19 @@ namespace TheForestManMVC.Controllers
                     }
                     else
                     {
-
-                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                            responseToken.Token);
-                        var requestComm = await client.PostAsJsonAsync($"{HomeController.url}/comment/loggedin", commentRequest);
+                        if (responseToken != null)
+                        {
+                            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                                responseToken.Token);
+                            var requestComm = await client.PostAsJsonAsync($"{HomeController.url}/comment/loggedin", commentRequest);
+                        }
                     }
                 }
             }
             return RedirectToAction("CommentsByPostId","Comment", new { id = postId },null);
         }
-        public async Task<ActionResult> EditComment(Guid id, string body, Guid? postId, Guid? userId)
+        public async Task<ActionResult> EditComment(Guid id, string commentbody, Guid? postId, Guid? userId)
         {
             using (HttpClient client = new HttpClient())
             {
@@ -83,10 +85,13 @@ namespace TheForestManMVC.Controllers
                     var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
                     var responseToken = JsonSerializer.Deserialize<UserToken>(
                         token, jsonSerializerOptions);
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                        responseToken.Token);
-                    var requestComm = await client.PutAsJsonAsync($"{HomeController.url}/comment/{id}", body);
+                    if (responseToken != null)
+                    {
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                            responseToken.Token);
+                        var requestComm = await client.PutAsJsonAsync($"{HomeController.url}/comment/{id}", commentbody);
+                    }
                     
                 }
             }
@@ -101,7 +106,7 @@ namespace TheForestManMVC.Controllers
             commentId = id;
             CommentInfo comment = new CommentInfo()
             {
-                Body = body,
+                CommentBody = body,
                 Id = id,
                 PostId = postId,
                 UserId = userId
@@ -118,14 +123,17 @@ namespace TheForestManMVC.Controllers
                     var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
                     var responseToken = JsonSerializer.Deserialize<UserToken>(
                         token, jsonSerializerOptions);
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                        responseToken.Token);
-                    HttpResponseMessage commentResponse = await client.DeleteAsync($"{HomeController.url}/comment/{commentId}");
-
-                    if (commentResponse.StatusCode == HttpStatusCode.NoContent)
+                    if (responseToken != null)
                     {
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                            responseToken.Token);
+                        HttpResponseMessage commentResponse = await client.DeleteAsync($"{HomeController.url}/comment/{commentId}");
 
+                        if (commentResponse.StatusCode == HttpStatusCode.NoContent)
+                        {
+
+                        }
                     }
                 }
             }
@@ -142,18 +150,24 @@ namespace TheForestManMVC.Controllers
                     var responseToken = JsonSerializer.Deserialize<UserToken>(
                         token, jsonSerializerOptions);
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                        responseToken.Token);
-                    HttpResponseMessage commentResponse = await client.GetAsync($"{HomeController.url}/comment/{id}");
-
-                    if (commentResponse.IsSuccessStatusCode)
+                    if (responseToken != null)
                     {
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                            responseToken.Token);
+                        HttpResponseMessage commentResponse = await client.GetAsync($"{HomeController.url}/comment/{id}");
 
-                        var response = await commentResponse.Content.ReadAsStringAsync();
-                        CommentInfo commentInfo = JsonSerializer.Deserialize<CommentInfo>(response,
-                                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-                        commentId = id;
-                        return View(commentInfo);
+                        if (commentResponse.IsSuccessStatusCode)
+                        {
+
+                            var response = await commentResponse.Content.ReadAsStringAsync();
+                            if (response != null)
+                            {
+                                CommentInfo? commentInfo = JsonSerializer.Deserialize<CommentInfo>(response,
+                                        new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+                                commentId = id;
+                                return View(commentInfo);
+                            }
+                        }
                     }
                 }
             }

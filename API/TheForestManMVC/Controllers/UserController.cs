@@ -30,11 +30,14 @@ namespace TheForestManMVC.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     var users = await response.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
-                    foreach (var user in users)
+                    if (users != null)
                     {
-                        Console.WriteLine(user.ToString());
+                        foreach (var user in users)
+                        {
+                            Console.WriteLine(user.ToString());
+                        }
+                        return users.ToList();
                     }
-                    return users.ToList();
                 }
             }
             return userInfos;
@@ -83,7 +86,7 @@ namespace TheForestManMVC.Controllers
                     var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
                     var responseToken = JsonSerializer.Deserialize<UserToken>(
                         token, jsonSerializerOptions);
-                    
+                    if(responseToken != null)
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
                         responseToken.Token);
                 }
@@ -116,24 +119,29 @@ namespace TheForestManMVC.Controllers
             else return Content("inca lucrez la asta");
             
         }
-        public async Task<IActionResult> CreateUser()
+        public IActionResult CreateUser()
         {
-
             return View();
-
         }
         [HttpPost]
         public async Task<ActionResult> GetRegisterCode(RegisterModel registerModel)
         {
-            if(!registerModel.Password.Equals(registerModel.RepeatPassword))
+            if(registerModel.Password!= null && !registerModel.Password.Equals(registerModel.RepeatPassword))
             {
                 ViewBag.ErrorCreateUser = "The passwords are not the same";
                 return View("CreateUser");
             }
-            registerCredentials.UserName = registerModel.UserName;
-            registerCredentials.Email = registerModel.Email;
-            registerCredentials.Password = registerModel.Password;
-
+            if (registerModel.Email != null && registerModel.UserName != null)
+            {
+                registerCredentials.UserName = registerModel.UserName;
+                registerCredentials.Email = registerModel.Email;
+                registerCredentials.Password = registerModel.Password;
+            }
+            else
+            {
+                ViewBag.ErrorCreateUser = "No null values allowed";
+                return View("CreateUser");
+            }
             var code = await GetCode("registercode");
             if(code == false)
             {
@@ -160,7 +168,8 @@ namespace TheForestManMVC.Controllers
                 var stringtoken = await httpResponseToken.Content.ReadAsStringAsync();
                 if (rememberMe != null)
                 {
-                    Response.Cookies.Append("token3", stringtoken, new CookieOptions() { Expires = DateTime.Now.AddDays(6) });
+                    Response.Cookies.Append("token3", stringtoken, 
+                        new CookieOptions() { Expires = DateTime.Now.AddDays(30) });
                 }
                 else
                 {
@@ -179,11 +188,16 @@ namespace TheForestManMVC.Controllers
                 if (id == null)
                 {
                     var token = Request.Cookies["token3"];
-                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                    var responseToken = JsonSerializer.Deserialize<UserToken>(
-                        token, jsonSerializerOptions);
-                    response = await client.GetAsync($"{HomeController.url}/user/{responseToken.UserId}/postscomments");
+                    if (token != null)
+                    {
+                        var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                        var responseToken = JsonSerializer.Deserialize<UserToken>(
+                            token, jsonSerializerOptions);
+                        if(responseToken != null)
+                        response = await client.GetAsync($"{HomeController.url}/user/{responseToken.UserId}/postscomments");
+                    }
                 }
+
                 else
                 {
                     response = await client.GetAsync($"{HomeController.url}/user/{id}/postscomments");
@@ -196,18 +210,14 @@ namespace TheForestManMVC.Controllers
                 return Content("nu merge...");
             }
         }
-        public async Task<ActionResult> LogIn()
+        public ActionResult LogIn()
         {
             
             return View();
         }
-        public async Task<ActionResult> LogOut()
+        public ActionResult LogOut()
         {
-            var stringToken = Request.Cookies["token3"];
             HttpContext.Response.Cookies.Delete("token3");
-            var token = Request.Cookies["token3"];
-            //HttpContext.Response.Cookies.Append("token", stringToken, new CookieOptions() { Expires = DateTime.Now.AddDays(-1) });
-            
             return RedirectToAction("Index","Home");
         }
 
@@ -216,33 +226,50 @@ namespace TheForestManMVC.Controllers
             using (HttpClient client = new HttpClient())
             {
                 var token = Request.Cookies["token3"];
-                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                    token, jsonSerializerOptions);
-                HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{responseToken.UserId}");
-                if (response.IsSuccessStatusCode)
+                if (token != null)
                 {
-                    var user = await response.Content.ReadFromJsonAsync<UserInfo>();
-                    RegisterModel registerModel = new RegisterModel()
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    if (responseToken != null)
                     {
-                        Email = user.Email,
-                        UserName = user.UserName
-                    };
-                    return View(registerModel);
+                        HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{responseToken.UserId}");
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var user = await response.Content.ReadFromJsonAsync<UserInfo>();
+                            if (user != null)
+                            {
+                                RegisterModel registerModel = new RegisterModel()
+                                {
+                                    Email = user.Email,
+                                    UserName = user.UserName
+                                };
+                                return View(registerModel);
+                            }
+                        }
+                    }
                 }
                 return Content("Not found");
             }
         }
         public async Task<ActionResult> GetNewPassCode(RegisterModel registerModel)
         {
-            if (!registerModel.Password.Equals(registerModel.RepeatPassword))
+            if (registerModel.Password!= null && !registerModel.Password.Equals(registerModel.RepeatPassword))
             {
                 ViewBag.ErrorCreateUser = "The passwords are not the same";
                 return View("Edit");
             }
-            registerCredentials.UserName = registerModel.UserName;
-            registerCredentials.Email = registerModel.Email;
-            registerCredentials.Password = registerModel.Password;
+            if (registerModel.UserName != null && registerModel.Email != null)
+            {
+                registerCredentials.UserName = registerModel.UserName;
+                registerCredentials.Email = registerModel.Email;
+                registerCredentials.Password = registerModel.Password;
+            }
+            else
+            {
+                ViewBag.ErrorCreateUser = "No null values allowed";
+                return View("Edit");
+            }
             var code = await GetCode("newpasscode");
             if (code == false)
             {
@@ -268,23 +295,28 @@ namespace TheForestManMVC.Controllers
             using (HttpClient client = new HttpClient())
             {
                 var token = Request.Cookies["token3"];
-                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                    token, jsonSerializerOptions);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    responseToken.Token);
-                var respueste = await client.PutAsJsonAsync($"{HomeController.url}/user", userCode);
-                if (respueste.IsSuccessStatusCode)
+                if (token != null)
                 {
-                    registerCredentials.Password = null;
-                    return RedirectToAction("Index", "Home");
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    if (responseToken != null)
+                    {
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                            responseToken.Token);
+                        var respueste = await client.PutAsJsonAsync($"{HomeController.url}/user", userCode);
+                        if (respueste.IsSuccessStatusCode)
+                        {
+                            registerCredentials.Password = null;
+                            return RedirectToAction("Index", "Home");
+                        }
+                    }
+
                 }
-                else
-                {
                     ViewBag.ErrorUser = "A aparut o eroare";
                     return View("GetNewPassCode");
-                }
+                
             }
         }
         public async Task<ActionResult> Delete()
@@ -292,14 +324,20 @@ namespace TheForestManMVC.Controllers
             using (HttpClient client = new HttpClient())
             {
                 var token = Request.Cookies["token3"];
-                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                    token, jsonSerializerOptions);
-                HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{responseToken.UserId}");
-                if (response.IsSuccessStatusCode)
+                if (token != null)
                 {
-                    var user = await response.Content.ReadFromJsonAsync<UserInfo>();
-                    return View(user);
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    if (responseToken != null)
+                    {
+                        HttpResponseMessage response = await client.GetAsync($"{HomeController.url}/user/{responseToken.UserId}");
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var user = await response.Content.ReadFromJsonAsync<UserInfo>();
+                            return View(user);
+                        }
+                    }
                 }
                 return Content("Not found");
             }
@@ -327,24 +365,28 @@ namespace TheForestManMVC.Controllers
             using (HttpClient client = new HttpClient())
             {
                 var token = Request.Cookies["token3"];
-                var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-                var responseToken = JsonSerializer.Deserialize<UserToken>(
-                    token, jsonSerializerOptions);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
-                    responseToken.Token);
-                var respueste = await client.DeleteAsync($"{HomeController.url}/user/delete?username={registerCredentials.UserName}&&codeFromUser={coderead.Code}&&created={coderead.Created.ToString()}");
-                if (respueste.StatusCode == HttpStatusCode.NoContent)
+                if (token != null)
                 {
-                    HttpContext.Response.Cookies.Delete("token3");
-                    return RedirectToAction("Index", "User");
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    if (responseToken != null)
+                    {
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                            responseToken.Token);
+                        var respueste = await client.DeleteAsync($"{HomeController.url}/user/delete?username={registerCredentials.UserName}&&codeFromUser={coderead.Code}&&created={coderead.Created.ToString()}");
+                        if (respueste.StatusCode == HttpStatusCode.NoContent)
+                        {
+                            HttpContext.Response.Cookies.Delete("token3");
+                            return RedirectToAction("Index", "User");
 
+                        }
+                    }
                 }
-                else
-                {
-                    ViewBag.ErrorUser = "A aparut o eroare";
-                    return View("GetDeleteCode");
-                }
+                ViewBag.ErrorUser = "A aparut o eroare";
+                return View("GetDeleteCode");
+                
             }
         }
 

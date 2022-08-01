@@ -55,7 +55,7 @@ namespace API.Utils
 
                 }
             }
-            catch (Exception ex)
+            catch 
             {
 
                 resultCode = ResultCode.Error;

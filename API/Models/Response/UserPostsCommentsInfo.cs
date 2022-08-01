@@ -28,7 +28,7 @@ namespace Models.Response
             {
                 foreach (var post in Posts)
                 {
-                    user.AppendLine("User:" + UserName + "\n" + post.Title + "\n" + post.Body);
+                    user.AppendLine("User:" + UserName + "\n" + post.Title + "\n" + post.Description);
                 }
             }
             user.Append("Comments:\n");
