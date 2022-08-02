@@ -1,58 +1,58 @@
-﻿//// See https://aka.ms/new-console-template for more information
-//using System.Net.Http.Json;
-//using System.Net.Http;
-//using System.Net.Http.Headers;
-//using testingTheApi;
-//using System.Text.Json;
-//using System.Text;
-//using System.Net;
-//using System.Web;
-//using Models.Request;
-//using Models.Response;
+﻿// See https://aka.ms/new-console-template for more information
+using System.Net.Http.Json;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using testingTheApi;
+using System.Text.Json;
+using System.Text;
+using System.Net;
+using System.Web;
+using Models.Request;
+using Models.Response;
 
-//Console.WriteLine(DateTime.Now);
-//HttpClient client = new();
-//client.BaseAddress = new Uri("https://localhost:7083");
-//client.DefaultRequestHeaders.Accept.Clear();
-//client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-////HttpResponseMessage response = new HttpResponseMessage();
-//HttpResponseMessage response = await client.GetAsync("api/post");
-//HttpResponseMessage response2 = await client.GetAsync("api/user");
-//HttpResponseMessage response3 = await client.GetAsync("api/comment");
-////response = await client.
-//response.EnsureSuccessStatusCode();
-//response2.EnsureSuccessStatusCode();
-//response3.EnsureSuccessStatusCode();
-//if (
-//    response.IsSuccessStatusCode && 
-//    response2.IsSuccessStatusCode && response3.IsSuccessStatusCode)
-//{
-//    Console.WriteLine("          Post list:   ");
-    
-//    var posts = await response.Content.ReadFromJsonAsync<IEnumerable<PostInfo>>();
-//    foreach (var post in posts)
-//    {
-//        Console.WriteLine(post.PostWithComments());
-//    }
-//    Console.WriteLine();
-//    Console.WriteLine("          Users List:   ");
-//    var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
-//    foreach (var user in users)
-//    {
-//        Console.WriteLine(user.ToString());
-//    }
-//    var comments = await response3.Content.ReadFromJsonAsync<IEnumerable<CommentInfo>>();
-//    Console.WriteLine("          Comments list:   ");
-//    foreach (var comment in comments)
-//    {
-//        Console.WriteLine(comment.ToString());
-//    }
-//    Console.WriteLine(); Console.WriteLine();
-//}
-//else
-//{
-//    Console.WriteLine("No results");
-//}
+Console.WriteLine(DateTime.Now);
+HttpClient client = new();
+client.BaseAddress = new Uri("https://localhost:7083");
+client.DefaultRequestHeaders.Accept.Clear();
+client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+//HttpResponseMessage response = new HttpResponseMessage();
+HttpResponseMessage response = await client.GetAsync("api/post");
+HttpResponseMessage response2 = await client.GetAsync("api/user");
+HttpResponseMessage response3 = await client.GetAsync("api/comment");
+//response = await client.
+response.EnsureSuccessStatusCode();
+response2.EnsureSuccessStatusCode();
+response3.EnsureSuccessStatusCode();
+if (
+    response.IsSuccessStatusCode &&
+    response2.IsSuccessStatusCode && response3.IsSuccessStatusCode)
+{
+    Console.WriteLine("          Post list:   ");
+
+    var posts = await response.Content.ReadFromJsonAsync<IEnumerable<PostInfo>>();
+    foreach (var post in posts)
+    {
+        Console.WriteLine(post.PostWithComments());
+    }
+    Console.WriteLine();
+    Console.WriteLine("          Users List:   ");
+    var users = await response2.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
+    foreach (var user in users)
+    {
+        Console.WriteLine(user.ToString());
+    }
+    var comments = await response3.Content.ReadFromJsonAsync<IEnumerable<CommentInfo>>();
+    Console.WriteLine("          Comments list:   ");
+    foreach (var comment in comments)
+    {
+        Console.WriteLine(comment.ToString());
+    }
+    Console.WriteLine(); Console.WriteLine();
+}
+else
+{
+    Console.WriteLine("No results");
+}
 
 
 ////post json
@@ -87,7 +87,7 @@
 ///*
 //var newPost = new Post()
 //{
-    
+
 //    User = "mgfgb",
 //    Description = "FdfgfbgfjgfgkgfhskjdsjhgfgjkgdhkgdhgSFJDSFVODSFJFGVOJVFOIJ",
 //    Created = DateTime.Now,
@@ -111,7 +111,7 @@
 //            Console.WriteLine(post.ToString());
 //        }
 //    }
-   
+
 //}*/
 
 ///*Post newPost = new Post();
@@ -145,7 +145,7 @@
 //    }
 //*/
 ///*
- 
+
 // //post with header
 //string url = "https://localhost:7083" + "/api/post";
 //using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, url))
@@ -166,14 +166,14 @@
 ///*
 //try
 //{
-    
-    
+
+
 //        var respuesta = await client.PostAsJsonAsync($"{urlAccounts}/create", credentials);
 //        if (respuesta.StatusCode == HttpStatusCode.InternalServerError)
 //        {
 //            respuesta.EnsureSuccessStatusCode();
 //        }
-    
+
 //}
 //catch (Exception e)
 //{

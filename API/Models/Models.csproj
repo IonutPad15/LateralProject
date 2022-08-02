@@ -49,6 +49,7 @@
     <Compile Include="Request\UserRequest.cs" />
     <Compile Include="Request\UserCode.cs" />
     <Compile Include="Request\ValidationCode.cs" />
+    <Compile Include="Request\VoteRequest.cs" />
     <Compile Include="Response\CommentInfo.cs" />
     <Compile Include="Response\PostInfo.cs" />
     <Compile Include="Response\UserInfo.cs" />

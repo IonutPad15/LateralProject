@@ -130,6 +130,33 @@ namespace API.Data.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("API.Models.Vote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CommentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsUpVote")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("PostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommentId");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("Votes");
+                });
+
             modelBuilder.Entity("API.Models.Comment", b =>
                 {
                     b.HasOne("API.Models.Post", null)
@@ -148,9 +175,27 @@ namespace API.Data.Migrations
                         .HasForeignKey("UserId");
                 });
 
+            modelBuilder.Entity("API.Models.Vote", b =>
+                {
+                    b.HasOne("API.Models.Comment", null)
+                        .WithMany("Votes")
+                        .HasForeignKey("CommentId");
+
+                    b.HasOne("API.Models.Post", null)
+                        .WithMany("Votes")
+                        .HasForeignKey("PostId");
+                });
+
+            modelBuilder.Entity("API.Models.Comment", b =>
+                {
+                    b.Navigation("Votes");
+                });
+
             modelBuilder.Entity("API.Models.Post", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("Votes");
                 });
 
             modelBuilder.Entity("API.Models.User", b =>

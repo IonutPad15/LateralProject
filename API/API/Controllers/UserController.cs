@@ -341,5 +341,27 @@ namespace API.Controllers
             }
             return new UserToken();
         }
+        [HttpPost("vote")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> Vote([FromBody] VoteRequest voteRequest)
+        {
+
+            ///de verificat toate cazurile
+            VoteService voteService = new VoteService();
+            UserService userService = new UserService();
+            if (voteRequest == null || voteRequest.UserId == null) return BadRequest();
+            var user = await userService.GetUserById(_context, voteRequest.UserId);
+            var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+            if (user != null && userclaim != null && user.UserName != null &&
+                !user.UserName.Equals(userclaim.Value)) return Unauthorized(); 
+            if (voteRequest.PostId != null && voteRequest.CommentId == null)
+            {
+                var vote = await voteService.GetVoteByUserAndPostId(_context, voteRequest.UserId, voteRequest.PostId);
+                if(vote != null)
+                {
+
+                }
+            }
+        }
     }
 }

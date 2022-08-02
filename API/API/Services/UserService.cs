@@ -13,6 +13,7 @@ namespace API.Services
         private static readonly MapperConfiguration? config = new MapperConfiguration(cfg =>
                     cfg.CreateMap<User, UserInfo>()
                 );
+        private readonly SiteDbContext context = new SiteDbContext();
         public UserService()
         {
             
@@ -20,6 +21,12 @@ namespace API.Services
         public async Task<List<UserInfo>> GetUsers(SiteDbContext _context)
         {
             var users = await _context.Users.Where(u => u.IsDeleted == false).ToListAsync();
+            var mapper = new Mapper(config);
+            return mapper.Map<List<UserInfo>>(users);
+        }
+        public async Task<List<UserInfo>> GetUsers()
+        {
+            var users = await context.Users.Where(u => u.IsDeleted == false).ToListAsync();
             var mapper = new Mapper(config);
             return mapper.Map<List<UserInfo>>(users);
         }

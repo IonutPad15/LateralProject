@@ -5,8 +5,6 @@ using Models.Response;
 using System.Net;
 using TheForestManMVC.Models;
 using System.Text.Json;
-using System.Web;
-using RestSharp;
 
 namespace TheForestManMVC.Controllers
 {
@@ -32,10 +30,7 @@ namespace TheForestManMVC.Controllers
                     var users = await response.Content.ReadFromJsonAsync<IEnumerable<UserInfo>>();
                     if (users != null)
                     {
-                        foreach (var user in users)
-                        {
-                            Console.WriteLine(user.ToString());
-                        }
+                        
                         return users.ToList();
                     }
                 }

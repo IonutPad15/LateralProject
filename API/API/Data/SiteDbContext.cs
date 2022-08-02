@@ -37,5 +37,6 @@ namespace API.Data
         public DbSet<User> Users => Set<User>();
         public DbSet<Post> Posts => Set<Post>();
         public DbSet<Comment> Comments => Set<Comment>();
+        public DbSet<Vote>  Votes => Set<Vote>();
     }
 }

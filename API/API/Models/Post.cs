@@ -26,6 +26,7 @@ namespace API.Models
         public Guid? UserId { get; set; }
         public string? Author { get; set; }
         public List<Comment> Comments { get; set; } = null!;
+        public List<Vote> Votes { get; set; } = null!;
         public bool IsDeleted { get; set; }
         
         //public UserInfo User { get; set; }
