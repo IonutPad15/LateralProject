@@ -2,13 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using API.Data;
 using API.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
 using Models.Request;
 using Models.Response;
 using API.Services;
+using AutoMapper;
 
 namespace API.Controllers
 {
@@ -17,26 +17,25 @@ namespace API.Controllers
     public class CommentController : ControllerBase
     {
         private readonly SiteDbContext _context;
+        private readonly MapperConfiguration config = new MapperConfiguration(cfg => {
+            cfg.CreateMap<User, UserInfo>();
+            cfg.CreateMap<User, UserPostsCommentsInfo>();
+            cfg.CreateMap<Post, PostInfo>();
+            cfg.CreateMap<Comment, CommentInfo>();
+            cfg.CreateMap<UserCode, User>();
+        });
+        private readonly Mapper mapper;
         public CommentController(SiteDbContext context)
         {
             _context = context;
+            mapper = new Mapper(config);
         }
         [HttpGet("{id}")]
         public async Task<ActionResult> GetCommentById(Guid id)
         {
             var comment = await CommentService.GetCommentById(_context,id);
-            if(comment == null) return NotFound(); 
-            CommentInfo commentInfo = new CommentInfo()
-            {
-                Id = comment.Id,
-                Created = comment.Created,
-                Updated = comment.Updated,
-                UserId = comment.UserId,
-                Author = comment.Author,
-                CommentBody = comment.CommentBody,
-                PostId = comment.PostId
-
-            };
+            if(comment == null) return NotFound();
+            CommentInfo commentInfo = mapper.Map<CommentInfo>(comment);
             return Ok(commentInfo);
 
         }
@@ -48,10 +47,8 @@ namespace API.Controllers
         {
             Comment comment = new Comment();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
-            
             if (userclaim != null)
-            {
-                
+            {    
                 var user = await UserService.GetUserByUsername(_context, userclaim.Value);
                 if (user != null)
                 {
@@ -61,16 +58,16 @@ namespace API.Controllers
                     comment.PostId = commentRequest.PostId;
                     comment.Updated = DateTime.Now;
                     comment.Created = DateTime.Now;
-                    
                     var codeResult = await CommentService.CreateComment(_context, comment);
                     if (codeResult == DbCodes.Codes.Error)
                         return BadRequest("Something went wrong");
                     return Ok();
                 }
             }
-                return BadRequest();
+            return BadRequest();
 
         }
+
         [HttpPost("loggedout")]
         [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateAnonyme([FromBody] CommentRequest commentRequest)

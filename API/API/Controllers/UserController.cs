@@ -47,23 +47,15 @@ namespace API.Controllers
                 return userInfos;
             
         }
+
         [HttpGet("{id}")]
         public async Task<ActionResult> GetUser(Guid id)
         {
-
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == id && u.IsDeleted == false);
+            var user = await UserService.GetUserById(_context, id);
             if (user == null) return NotFound();
-            //UserInfo userInfo = new UserInfo()
-            //{
-            //    UserName = user.UserName,
-            //    Email = user.Email,
-            //    Id = user.Id
-            //};
             UserInfo userInfo = mapper.Map<UserInfo>(user);
             return Ok(userInfo);
-
         }
-
 
         [HttpGet("{id}/postscomments")]
         [ProducesResponseType(typeof(UserPostsCommentsInfo), StatusCodes.Status200OK)]
@@ -97,11 +89,10 @@ namespace API.Controllers
                 else userCodes.Add(username, code);
                 return ResultCode.ValidAdress;
             }
-            
             if(verif.Equals(ResultCode.InvalidAdress.ToString()))   return ResultCode.InvalidAdress;
-            
             return ResultCode.Error;
         }
+
         [HttpGet("registercode")]
         public async Task<ActionResult> GetRegisterCode([FromQuery] string username,[FromQuery] string email)
         {
@@ -109,20 +100,14 @@ namespace API.Controllers
             var usernameExists = await UserService.GetUserByUsername(_context, username);
             if (usernameExists == null)
             {
-                
-                if(SendCode(username, email, "You've made an account on TheForestMan! ")==ResultCode.ValidAdress)
-                {
+
+                if (SendCode(username, email, "You've made an account on TheForestMan! ") == ResultCode.ValidAdress)
                     return Ok(username);
-                }
                 else
-                {
                     return BadRequest("Eroare");
-                }
             }
             else
-            {
                 return BadRequest("Already exists");
-            }
 
         }
         
@@ -144,22 +129,13 @@ namespace API.Controllers
                 
                 TimeSpan diff = userCode.Code.Created.Subtract(code.Created);
                 
-                if(diff.TotalSeconds>60)
-                {
-                    return BadRequest("Too late");
-                }
+                if(diff.TotalSeconds>60) return BadRequest("Too late");
+                
                 else if(code.Code.Equals(userCode.Code.Code))
                 {
                     HashHelper hashHelper = new HashHelper();
                     string hashedPassword = hashHelper.GetHash(userCode.Password);
                     userCode.Password = hashedPassword;
-                    //User user = new User()
-                    //{
-                    //    UserName = userCode.UserName,
-                    //    Email = userCode.Email,
-                    //    Password = hashedPassword,
-                    //    Id = userCode.Id
-                    //};
                     User user = mapper.Map<User>(userCode);
                     
                     var codeResult = await UserService.CreateUser(_context, user);
@@ -167,16 +143,10 @@ namespace API.Controllers
                         return BadRequest("ERROR");
                     return BuildToken(user);
                 }
-                else
-                {
-                    return BadRequest("Code not valid");
-                }
+                else return BadRequest("Code not valid");
                 
             }
-            else
-            {
-                return BadRequest("Eroare");
-            }
+            else return BadRequest("Eroare");
 
         }
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -190,7 +160,6 @@ namespace API.Controllers
             {
                 var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
                 var emailclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email));
-
                 if (userclaim != null && emailclaim!=null)
                 {
 
@@ -198,19 +167,12 @@ namespace API.Controllers
                         return BadRequest("Not his account");
                 }
                 if (SendCode(username, email, "You want to change your password! ") == ResultCode.ValidAdress)
-                {
                     return Ok(username);
-                }
-                else
-                {
-                    return BadRequest("Eroare");
-                }
+                else return BadRequest("Eroare");
             }
-            else
-            {
-                return BadRequest("User not found");
-            }
+            else return BadRequest("User not found");
         }
+
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -225,10 +187,8 @@ namespace API.Controllers
 
             if (userclaim != null && emailclaim!=null)
             {
-                
                 if (!userclaim.Value.Equals(userToUpdate.UserName) || !emailclaim.Value.Equals(userToUpdate.Email))
                     return BadRequest("Not his account");
-
                 if (userToUpdate == null) return NotFound();
                 HashHelper hashHelper = new HashHelper();
                 string hashedPassword = hashHelper.GetHash(userCode.Password);
@@ -259,19 +219,15 @@ namespace API.Controllers
                         return BadRequest("Not his account");
                 }
                 if (SendCode(username, email, "You want to delete your account! ") == ResultCode.ValidAdress)
-                {
                     return Ok(username);
-                }
-                else
-                {
-                    return BadRequest("Eroare");
-                }
+                else return BadRequest("Eroare");
             }
             else
             {
                 return BadRequest("User not found");
             }
         }
+
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpDelete("delete")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -330,22 +286,18 @@ namespace API.Controllers
                             return BadRequest("Something went wrong");
                         return NoContent();
                     }
-                    else
-                    {
-                        return BadRequest("Code not valid");
-                    }
+                    else return BadRequest("Code not valid");
                 }
             }
             return BadRequest("Eroare");
         }
         [HttpPost("login")]
-        public ActionResult<UserToken> Login([FromBody] Credentials credentials)
+        public async Task<ActionResult<UserToken>> Login([FromBody] Credentials credentials)
         {
             HashHelper hashHelper = new HashHelper();
             string hashedPassword = hashHelper.GetHash(credentials.Password);
-            var user = _context.Users.SingleOrDefault(x=> x.IsDeleted == false 
-            && x.Password == hashedPassword
-            &&(x.Email==credentials.NameEmail|| x.UserName == credentials.NameEmail));
+            credentials.Password = hashedPassword;
+            var user = await UserService.GetUserByCredentials(_context, credentials);
             if (user == null) return BadRequest("Invalid login attempt");
             else return BuildToken(user);
         }
@@ -356,10 +308,10 @@ namespace API.Controllers
             if (user.UserName != null && user.Email != null)
             {
                 var claims = new List<Claim>()
-            {
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email)
-            };
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Email, user.Email)
+                };
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTkey"]));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -377,7 +329,6 @@ namespace API.Controllers
                     ExpirationDate = expiration,
                     UserId = user.Id
                 };
-
             }
             return new UserToken();
         }

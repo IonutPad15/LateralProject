@@ -3,6 +3,7 @@ using API.Models;
 using Microsoft.EntityFrameworkCore;
 using Models.Response;
 using AutoMapper;
+using Models.Request;
 
 namespace API.Services
 {
@@ -49,6 +50,12 @@ namespace API.Services
         public static async Task<User?> GetUserByUsernameAndEmail(SiteDbContext _context, string username, string email)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.UserName == username && u.IsDeleted == false && u.Email == email);
+        }
+        public static async Task<User?> GetUserByCredentials(SiteDbContext _context, Credentials credentials)
+        {
+            return await _context.Users.FirstOrDefaultAsync(x => x.IsDeleted == false
+            && x.Password == credentials.Password
+            && (x.Email == credentials.NameEmail || x.UserName == credentials.NameEmail));
         }
         public static async Task<DbCodes.Codes> CreateUser(SiteDbContext _context, User user)
         {

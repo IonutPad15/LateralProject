@@ -152,8 +152,8 @@ namespace API.Controllers
             
             var post = await PostService.GetPostById(_context,id);
             if (post == null) return NotFound();
-            
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == post.Author && u.IsDeleted == false);
+
+            var user = await UserService.GetUserById(_context, post.UserId);
             if (user == null) return NotFound("User");
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
@@ -178,7 +178,7 @@ namespace API.Controllers
         {
             var postToDelete = await PostService.GetPostById(_context, id);
             if (postToDelete == null) return NotFound();
-            var user = await _context.Users.FirstOrDefaultAsync(u=> u.Id== postToDelete.UserId && u.IsDeleted ==false);
+            var user = await UserService.GetUserById(_context, postToDelete.UserId);
             if (user == null) return BadRequest("You can't delete this post");
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
