@@ -1,16 +1,17 @@
 ﻿using API.Data;
+using API.Data.IRepository;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
 using Models.Response;
 namespace API.Services
 {
-    public class CommentService
+    public class CommentService:ICommentService
     {
-        public static async Task<Comment?> GetCommentById(SiteDbContext _context, Guid id)
+        public async Task<Comment?> GetCommentById(SiteDbContext _context, Guid id)
         {
             return await _context.Comments.FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted == false);
         }
-        public static async Task<DbCodes.Codes> CreateComment(SiteDbContext _context, Comment comment)
+        public async Task<DbCodes.Codes> CreateComment(SiteDbContext _context, Comment comment)
         {
             try
             {
@@ -23,7 +24,7 @@ namespace API.Services
                 return DbCodes.Codes.Error;
             }
         }
-        public static async Task<DbCodes.Codes> UpdateComment(SiteDbContext _context, Comment comment)
+        public async Task<DbCodes.Codes> UpdateComment(SiteDbContext _context, Comment comment)
         {
             try
             {

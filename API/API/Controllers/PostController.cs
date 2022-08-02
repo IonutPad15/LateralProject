@@ -34,45 +34,8 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IEnumerable<PostInfo>> GetPosts([FromHeader] int postAmount = -1)
         {
-            List<Post> posts = await PostService.GetPosts(_context);
-
-            //var postsInfos = from post in posts
-            //                select new PostInfo()
-            //                {
-            //                    Id = post.Id,
-            //                    Author = post.Author,
-            //                    Description = post.Description,
-            //                    Created = post.Created,
-            //                    Updated = post.Updated,
-            //                    Title = post.Title,
-            //                    UserId = post.UserId,
-
-            //                };
-            //List<PostInfo> postsInfo = postsInfos.ToList();
-            //int i = 0;
-
-            //foreach(Post post in posts)
-            //{
-            //    if(post.Comments != null)
-            //    foreach(var comment in post.Comments)
-            //    {
-            //        if (comment.IsDeleted == false)
-            //        {
-            //            CommentInfo comm = new CommentInfo()
-            //            {
-            //                Id = comment.Id,
-            //                Created = comment.Created,
-            //                Updated = comment.Updated,
-            //                Author = comment.Author,
-            //                CommentBody = comment.CommentBody,
-            //                UserId = comment.UserId
-            //            };
-            //            postsInfo[i].Comments.Add(comm);
-            //        }
-            //    }
-            //    postsInfo[i].Comments= postsInfo[i].Comments.OrderByDescending(p => p.Updated).ToList<CommentInfo>();
-            //    i++;
-            //}
+            PostService postService = new PostService();
+            List<Post> posts = await postService.GetPosts(_context);
             var postInfos = mapper.Map<List<PostInfo>>(posts);
             if (postAmount < 0)
                 return postInfos;
@@ -107,8 +70,9 @@ namespace API.Controllers
         [ProducesResponseType(typeof(PostInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetCommentsByPostid(Guid id)
-        { 
-            var posttester = await PostService.GetPostWithCommentsByPostId(_context, id);
+        {
+            PostService postService = new PostService();
+            var posttester = await postService.GetPostWithCommentsByPostId(_context, id);
             if(posttester == null) return NotFound();
             
             PostInfo postcomments = mapper.Map<PostInfo>(posttester);
@@ -126,7 +90,8 @@ namespace API.Controllers
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
             {
-                var user = await UserService.GetUserByUsername(_context, userclaim.Value);
+                UserService userService = new UserService();
+                var user = await userService.GetUserByUsername(_context, userclaim.Value);
                 if (user == null) return BadRequest();
                 Post post = new Post();
                 post.Title = postrequest.Title;
@@ -135,7 +100,8 @@ namespace API.Controllers
                 post.UserId = user.Id;
                 post.Created = DateTime.Now;
                 post.Updated = DateTime.Now;
-                var codeResult = await PostService.CreatePost(_context, post);
+                PostService postService = new PostService();
+                var codeResult = await postService.CreatePost(_context, post);
                 if (codeResult == DbCodes.Codes.Error)
                     return BadRequest("Something went wrong");
                 return Ok();
@@ -149,11 +115,11 @@ namespace API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> UpdatePost(Guid id,[FromBody] string newDesciption)
         {
-            
-            var post = await PostService.GetPostById(_context,id);
+            PostService postService = new PostService();
+            var post = await postService.GetPostById(_context,id);
             if (post == null) return NotFound();
-
-            var user = await UserService.GetUserById(_context, post.UserId);
+            UserService userService = new UserService();
+            var user = await userService.GetUserById(_context, post.UserId);
             if (user == null) return NotFound("User");
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
@@ -163,7 +129,7 @@ namespace API.Controllers
             }
             post.Description = newDesciption;
             post.Updated = DateTime.Now;
-            var codeResult = await PostService.UpdatePost(_context, post);
+            var codeResult = await postService.UpdatePost(_context, post);
             if (codeResult == DbCodes.Codes.Error)
                 return BadRequest("Something went wrong");
 
@@ -176,9 +142,11 @@ namespace API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var postToDelete = await PostService.GetPostById(_context, id);
+            PostService postService = new PostService();
+            var postToDelete = await postService.GetPostById(_context, id);
             if (postToDelete == null) return NotFound();
-            var user = await UserService.GetUserById(_context, postToDelete.UserId);
+            UserService userService = new UserService();
+            var user = await userService.GetUserById(_context, postToDelete.UserId);
             if (user == null) return BadRequest("You can't delete this post");
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
@@ -187,7 +155,7 @@ namespace API.Controllers
                     return BadRequest("Not his post");
             }
             
-            var posttester = await PostService.GetPostWithCommentsByPostId(_context, id);
+            var posttester = await postService.GetPostWithCommentsByPostId(_context, id);
             if(posttester == null) return NotFound();
             if(posttester.Comments != null)
             for(int i=0; i<posttester.Comments.Count;++i)
@@ -197,7 +165,7 @@ namespace API.Controllers
                 _context.Entry(comment).State = EntityState.Modified;
             }
             postToDelete.IsDeleted = true;
-            var codeResult = await PostService.UpdatePost(_context, postToDelete);
+            var codeResult = await postService.UpdatePost(_context, postToDelete);
             if (codeResult == DbCodes.Codes.Error)
                 return BadRequest("Something went wrong");
 

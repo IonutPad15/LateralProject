@@ -131,6 +131,11 @@ namespace TheForestManMVC.Controllers
                 ViewBag.ErrorCreateUser = "The passwords are not the same";
                 return View("CreateUser");
             }
+            if(registerModel.Password != null && registerModel.Password.Length<8)
+            {
+                ViewBag.ErrorCreateUser = "Password too short";
+                return View("CreateUser");
+            }
             if (registerModel.Email != null && registerModel.UserName != null)
             {
                 registerCredentials.UserName = registerModel.UserName;

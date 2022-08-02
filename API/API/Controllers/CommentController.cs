@@ -33,7 +33,8 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> GetCommentById(Guid id)
         {
-            var comment = await CommentService.GetCommentById(_context,id);
+            CommentService commentService = new CommentService();
+            var comment = await commentService.GetCommentById(_context,id);
             if(comment == null) return NotFound();
             CommentInfo commentInfo = mapper.Map<CommentInfo>(comment);
             return Ok(commentInfo);
@@ -48,8 +49,9 @@ namespace API.Controllers
             Comment comment = new Comment();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
-            {    
-                var user = await UserService.GetUserByUsername(_context, userclaim.Value);
+            {
+                UserService userService = new UserService();
+                var user = await userService.GetUserByUsername(_context, userclaim.Value);
                 if (user != null)
                 {
                     comment.CommentBody = commentRequest.Body;
@@ -58,7 +60,8 @@ namespace API.Controllers
                     comment.PostId = commentRequest.PostId;
                     comment.Updated = DateTime.Now;
                     comment.Created = DateTime.Now;
-                    var codeResult = await CommentService.CreateComment(_context, comment);
+                    CommentService commentService = new CommentService();
+                    var codeResult = await commentService.CreateComment(_context, comment);
                     if (codeResult == DbCodes.Codes.Error)
                         return BadRequest("Something went wrong");
                     return Ok();
@@ -80,8 +83,8 @@ namespace API.Controllers
             comment.PostId = commentRequest.PostId;
             comment.Updated = DateTime.Now;
             comment.Created = DateTime.Now;
-            
-            var codeResult = await CommentService.CreateComment(_context, comment);
+            CommentService commentService = new CommentService();
+            var codeResult = await commentService.CreateComment(_context, comment);
             if (codeResult == DbCodes.Codes.Error)
                 return BadRequest("Something went wrong");
             return Ok();
@@ -98,11 +101,11 @@ namespace API.Controllers
             {
                 return BadRequest();
             }
-            
-            var comment = await CommentService.GetCommentById(_context, id);
+            CommentService commentService = new CommentService();
+            var comment = await commentService.GetCommentById(_context, id);
             if (comment == null) return NotFound();
-            
-            var user = UserService.GetUserById(_context, comment.UserId);
+            UserService userService = new UserService();
+            var user = userService.GetUserById(_context, comment.UserId);
             if (user == null || !userclaim.Value.Equals(comment.Author))
             {
                 return BadRequest("Not your comment");
@@ -110,7 +113,7 @@ namespace API.Controllers
             comment.CommentBody = newBody;
             comment.Updated = DateTime.Now;
 
-            var codeResult =await CommentService.UpdateComment(_context, comment);
+            var codeResult =await commentService.UpdateComment(_context, comment);
             if (codeResult == DbCodes.Codes.Error)
                 return BadRequest("Something went wrong");
             return Ok();
@@ -123,15 +126,15 @@ namespace API.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> Delete(Guid id)
         {
-
-            var commentToDelete = await CommentService.GetCommentById(_context, id);
+            CommentService commentService = new CommentService();
+            var commentToDelete = await commentService.GetCommentById(_context, id);
             if (commentToDelete == null) return NotFound();
             if (commentToDelete.UserId == null)
             {
                 return BadRequest("Anonymous comments cannot be deleted");
             }
-            
-            var user = await UserService.GetUserById(_context, commentToDelete.UserId);
+            UserService userService = new UserService();
+            var user = await userService.GetUserById(_context, commentToDelete.UserId);
             if (user == null)
             {
                 return BadRequest("Anonymous comments cannot be editted");
@@ -145,7 +148,7 @@ namespace API.Controllers
             }
             commentToDelete.IsDeleted = true;
             
-            var codeResult = await CommentService.UpdateComment(_context, commentToDelete);
+            var codeResult = await commentService.UpdateComment(_context, commentToDelete);
             if (codeResult == DbCodes.Codes.Error)
                 return BadRequest("Something went wrong");
 

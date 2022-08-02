@@ -43,7 +43,8 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IEnumerable<UserInfo>> GetUsers()
         {
-            List<UserInfo> userInfos = await UserService.GetUsers(_context);
+            UserService userService = new UserService();
+            List<UserInfo> userInfos = await userService.GetUsers(_context);
                 return userInfos;
             
         }
@@ -51,7 +52,8 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> GetUser(Guid id)
         {
-            var user = await UserService.GetUserById(_context, id);
+            UserService userService = new UserService();
+            var user = await userService.GetUserById(_context, id);
             if (user == null) return NotFound();
             UserInfo userInfo = mapper.Map<UserInfo>(user);
             return Ok(userInfo);
@@ -62,7 +64,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPostsAndCommentsByUserId(Guid id)
         {
-            var usertester = await UserService.GetUserWithPostsAndCommentsByUserId(_context, id);
+            UserService userService = new UserService();
+            var usertester = await userService.GetUserWithPostsAndCommentsByUserId(_context, id);
             if(usertester == null) return NotFound();
             UserPostsCommentsInfo userpostinfo = mapper.Map<UserPostsCommentsInfo>(usertester);
             return  Ok(userpostinfo);
@@ -97,7 +100,8 @@ namespace API.Controllers
         public async Task<ActionResult> GetRegisterCode([FromQuery] string username,[FromQuery] string email)
         {
             if (username == null || email == null) return BadRequest("username and email are required");
-            var usernameExists = await UserService.GetUserByUsername(_context, username);
+            UserService userService = new UserService();
+            var usernameExists = await userService.GetUserByUsername(_context, username);
             if (usernameExists == null)
             {
 
@@ -137,8 +141,8 @@ namespace API.Controllers
                     string hashedPassword = hashHelper.GetHash(userCode.Password);
                     userCode.Password = hashedPassword;
                     User user = mapper.Map<User>(userCode);
-                    
-                    var codeResult = await UserService.CreateUser(_context, user);
+                    UserService userService = new UserService();
+                    var codeResult = await userService.CreateUser(_context, user);
                     if (codeResult == DbCodes.Codes.Error) 
                         return BadRequest("ERROR");
                     return BuildToken(user);
@@ -154,8 +158,9 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetNewPassCode([FromQuery] string username, [FromQuery] string email)
-        {  
-            var userExists = await UserService.GetUserByUsernameAndEmail(_context, username, email);
+        {
+            UserService userService = new UserService();
+            var userExists = await userService.GetUserByUsernameAndEmail(_context, username, email);
             if (userExists != null)
             {
                 var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
@@ -179,7 +184,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Update([FromBody] UserCode userCode)
         {
-            var userToUpdate = await UserService.GetUserByUsernameAndEmail(_context, 
+            UserService userService = new UserService();
+            var userToUpdate = await userService.GetUserByUsernameAndEmail(_context, 
                 userCode.UserName, userCode.Email);
             if (userToUpdate == null) return NotFound();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
@@ -194,7 +200,7 @@ namespace API.Controllers
                 string hashedPassword = hashHelper.GetHash(userCode.Password);
                 userToUpdate.Password = hashedPassword;
                 
-                var codeResult = await UserService.UpdateUser(_context, userToUpdate);
+                var codeResult = await userService.UpdateUser(_context, userToUpdate);
                 if (codeResult == DbCodes.Codes.Error) return BadRequest("Something went wrong");
                 return Ok();
             }
@@ -206,7 +212,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetDeleteCode([FromQuery] string username, [FromQuery] string email)
         {
-            var userExists = await UserService.GetUserByUsernameAndEmail(_context,username, email);
+            UserService userService = new UserService();
+            var userExists = await userService.GetUserByUsernameAndEmail(_context,username, email);
             if (userExists != null)
             {
                 var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
@@ -237,7 +244,8 @@ namespace API.Controllers
             [FromQuery] string created
             )
         {
-            var userToDelete = await UserService.GetUserByUsername(_context, username);
+            UserService userService = new UserService();
+            var userToDelete = await userService.GetUserByUsername(_context, username);
             if (userToDelete == null) return NotFound();
             var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
             if (userclaim != null)
@@ -257,7 +265,7 @@ namespace API.Controllers
                     }
                     else if(code.Code.Equals(codeFromUser))
                     {
-                        var usertester = await UserService.GetUserWithPostsAndCommentsByUserId(_context, userToDelete.Id);
+                        var usertester = await userService.GetUserWithPostsAndCommentsByUserId(_context, userToDelete.Id);
                         if (usertester == null) return NotFound();
                         if (usertester.Posts != null)
                         {
@@ -281,7 +289,7 @@ namespace API.Controllers
                             }
                         }
                         userToDelete.IsDeleted = true;
-                        var codeResult = await UserService.UpdateUser(_context, userToDelete);
+                        var codeResult = await userService.UpdateUser(_context, userToDelete);
                         if (codeResult == DbCodes.Codes.Error)
                             return BadRequest("Something went wrong");
                         return NoContent();
@@ -294,10 +302,11 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<UserToken>> Login([FromBody] Credentials credentials)
         {
+            UserService userService = new UserService();
             HashHelper hashHelper = new HashHelper();
             string hashedPassword = hashHelper.GetHash(credentials.Password);
             credentials.Password = hashedPassword;
-            var user = await UserService.GetUserByCredentials(_context, credentials);
+            var user = await userService.GetUserByCredentials(_context, credentials);
             if (user == null) return BadRequest("Invalid login attempt");
             else return BuildToken(user);
         }
