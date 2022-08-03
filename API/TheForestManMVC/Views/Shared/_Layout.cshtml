@@ -39,7 +39,7 @@
                                     <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="LogIn">Log in</a>
                                 </li>
                                  <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="CreateUser">Create account</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="CreateUser" asp-all-route-data=null>Create account</a>
                                 </li>
                             }
                             else
@@ -48,7 +48,7 @@
                                     <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="LogOut">Log out</a>
                                 </li>
                                 <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="AboutUser">Profile</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="AboutUser" asp-route{@id}-=@null>Profile</a>
                                 </li>
                             }
                         

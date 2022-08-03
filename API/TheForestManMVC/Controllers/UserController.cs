@@ -180,7 +180,7 @@ namespace TheForestManMVC.Controllers
                 return RedirectToAction("Index", "Home");
             }
         }
-        public async Task<ActionResult> AboutUser(Guid? id)
+        public async Task<ActionResult> AboutUser( Guid? id)
         {
             using (HttpClient client = new HttpClient())
             {
@@ -388,6 +388,106 @@ namespace TheForestManMVC.Controllers
                 return View("GetDeleteCode");
                 
             }
+        }
+        public async Task<ActionResult> UpVote(Guid postId, Guid commentId, bool verif, Guid userId)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var token = Request.Cookies["token3"];
+                if (token != null)
+                {
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    if (responseToken != null)
+                    {
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                            responseToken.Token);
+                        VoteRequest voteRequest = new VoteRequest()
+                        {
+                            PostId = postId,
+                            UserId = responseToken.UserId,
+                            IsUpVote = true
+                        };
+                        var request = await client.PostAsJsonAsync($"{HomeController.url}/user/vote", voteRequest);
+                        if (request.IsSuccessStatusCode)
+                        {
+                            return Content("a mers");
+                        }
+                        return Content("nu a mers");
+                    }
+                }
+                return Content("nu esti logat");
+
+            }
+        }
+        public async Task<ActionResult> DownVote(Guid? postId, Guid? commentId, bool verif, Guid? userId)
+        {
+
+            using (HttpClient client = new HttpClient())
+            {
+                var token = Request.Cookies["token3"];
+                if (token != null)
+                {
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    if (responseToken != null)
+                    {
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
+                            responseToken.Token);
+                        if (postId != null)
+                        {
+                            VoteRequest voteRequest = new VoteRequest()
+                            {
+                                PostId = postId,
+                                UserId = responseToken.UserId,
+                                IsUpVote = false
+                            };
+                            var request = await client.PostAsJsonAsync($"{HomeController.url}/user/vote", voteRequest);
+
+                            if (verif == false)
+                            {
+                                if (userId != null)
+                                {
+                                    return RedirectToAction("AboutUser", new { @id = userId });
+                                }
+                                return RedirectToAction("Index", "Home");
+                            }
+                            else
+                            {
+                                //return RedirectToAction("AboutUser", new RouteValueDictionary(
+                                //        new { controller = "User", action = "AboutUser", Id = userId }));
+                                return RedirectToAction("CommentsByPostId","Comment", new { @id = postId });
+                            }
+                        }
+                        if(commentId != null)
+                        {
+                            VoteRequest voteRequest = new VoteRequest()
+                            {
+                                CommentId = commentId,
+                                UserId = responseToken.UserId,
+                                IsUpVote = false
+                            };
+                            var request = await client.PostAsJsonAsync($"{HomeController.url}/user/vote", voteRequest);
+
+                            if (verif == false)
+                                return RedirectToAction("Index", "Home");
+                            else
+                                //return RedirectToAction("AboutUser", new RouteValueDictionary(
+                                //        new { controller = "User", action = "AboutUser", Id = userId }));
+                                return RedirectToAction("AboutUser", new { @id = userId });
+                        }
+                        
+
+                    }
+                }
+                return Content("nu merge");
+
+            }
+
         }
 
     }

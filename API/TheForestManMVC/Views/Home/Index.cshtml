@@ -31,77 +31,97 @@
 @{
     @model IEnumerable<PostInfo>
     <table class="table">
-        <tr>
-            <th>
-                Votes
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Author)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-                <th>
-                @Html.Label("Comments:")
-            </th>
-        </tr>
-        @foreach(var item in Model)
+                        <tr>
+                            <th>
+                                Votes
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Author)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Title)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Description)
+                            </th>
+                                <th>
+                                @Html.Label("Comments:")
+                            </th>
+                        </tr>
+                        @foreach(var item in Model)
     {
-        <tr>
-            <td>
-                <div class="btn-group">
-                <div class="col-2">
-                <input type="button" class="btn-primary" value = &#8679; style="font-size:22px">
-                        11
-                <input type ="button" class="btn-danger" value= &#8681; style="font-size:22px" >
-                </div>
-                </div>
-            </td>
-            <td>
-                @if(!item.Author.Equals("[User Deleted]"))
+                        <tr>
+                            <td>
+                                <div class="btn-group">
+                                <div class="col-2">
+                                <form asp-controller="User" asp-action="UpVote">
+                                    
+                                    <div class="form-group">
+                                        <input class="form-control" name="postId" value=@item.Id hidden />
+                                    </div>
+                                    <div class="form-group">
+                                        <input type ="submit" class="btn-outline-primary" value= &#8679;
+                                            style="font-size:22px"  >
+                                    </div>
+                                </form>
+                                        <div>
+                                            @Html.DisplayFor(modelItem=> @item.Votes)
+                                        </div>
+                                <form asp-controller="User" asp-action="DownVote">
+                                    
+                                    <div class="form-group">
+                                        <input class="form-control" name="postId" value=@item.Id hidden />
+                                    </div>
+                                    <div class="form-group">
+                                        <input type ="submit" class="btn-outline-danger" value= &#8681;
+                                            style="font-size:22px"   >
+                                    </div>
+                                </form>
+                                </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if(!item.Author.Equals("[User Deleted]"))
         {
-                    @Html.ActionLink($"{item.Author}","AboutUser","User",new{
+                                    @Html.ActionLink($"{item.Author}","AboutUser","User",new{
                 @id = @item.UserId}, null)
                         
         }
         else
         {
-                    @Html.DisplayFor(modelItem =>item.Author)
+                                    @Html.DisplayFor(modelItem =>item.Author)
         }
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem =>item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem =>item.Description)
-            </td>            
-            <td> 
-                @Html.ActionLink($"{item.Comments.Count}","CommentsByPostId","Comment",new{
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem =>item.Title)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem =>item.Description)
+                            </td>            
+                            <td> 
+                                @Html.ActionLink($"{item.Comments.Count}","CommentsByPostId","Comment",new{
             @id = @item.Id}, null)
-            </td>
-            <td>
-                   
-            @{
+                            </td>
+                            <td>
+                                   
+                            @{
         var token = Context.Request.Cookies["token3"];
-                @if(token != null && @item.UserId != null)
+                                                @if(token != null && @item.UserId != null)
         {
             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             var responseToken = JsonSerializer.Deserialize<UserToken>(
                 token, jsonSerializerOptions);
-                    @if(responseToken!= null && responseToken.UserId == @item.UserId)
+                                                    @if(responseToken!= null && responseToken.UserId == @item.UserId)
             {
-                        <div>
-                            @Html.ActionLink("Edit", "Edit", new { @id = @item.Id,@body=@item.Description}) |
-                            @Html.ActionLink("Delete", "Delete", new { @id = @item.Id,@body= @item.Description })
-                        </div>
+                                                        <div>
+                                                            @Html.ActionLink("Edit", "Edit", new { @id = @item.Id,@body=@item.Description}) |
+                                                            @Html.ActionLink("Delete", "Delete", new { @id = @item.Id,@body= @item.Description })
+                                                        </div>
             }
         }
-            }
-            </td>
-        </tr>  
+                            }
+                            </td>
+                        </tr>  
     }                       
     </table>
 }

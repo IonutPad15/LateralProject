@@ -37,8 +37,11 @@ namespace API.Services
         public async Task<User?> GetUserWithPostsAndCommentsByUserId(SiteDbContext _context, Guid id)
         {
             var usertester = await _context.Users.Include(x => x.Posts.Where(p => p.IsDeleted == false).OrderByDescending(p => p.Updated))
+                                            .ThenInclude(v=>v.Votes)
+                                            .Include(x => x.Posts.Where(p => p.IsDeleted == false).OrderByDescending(p => p.Updated))
                                            .ThenInclude(x => x.Comments.Where(c => c.IsDeleted == false).OrderByDescending(c => c.Updated))
                                            .Include(x => x.Comments.Where(c => c.IsDeleted == false).OrderByDescending(c => c.Updated))
+                                           .ThenInclude(c => c.Votes)
                                            .FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
             return usertester;
         }

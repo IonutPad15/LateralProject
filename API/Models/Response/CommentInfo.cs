@@ -15,6 +15,7 @@ namespace Models.Response
         public DateTime Updated { get; set; }
         public Guid? UserId { get; set; }
         public Guid? PostId { get; set; }
+        public int Votes { get; set; }  
         override
         public string ToString()
         {

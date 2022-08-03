@@ -21,8 +21,10 @@ namespace API.Controllers
         private readonly MapperConfiguration config = new MapperConfiguration(cfg => {
             cfg.CreateMap<User, UserInfo>();
             cfg.CreateMap<User, UserPostsCommentsInfo>();
-            cfg.CreateMap<Post, PostInfo>();
-            cfg.CreateMap<Comment, CommentInfo>();
+            cfg.CreateMap<Post, PostInfo>().ForMember(
+                dest => dest.Votes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
+            cfg.CreateMap<Comment, CommentInfo>().ForMember(
+                dest => dest.Votes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
             cfg.CreateMap<UserCode, User>();
         });
         private readonly Mapper mapper;
@@ -31,12 +33,18 @@ namespace API.Controllers
             mapper = new Mapper(config);
             _context = context;
         }
+        private static int CalculateVotes(List<Vote> votes)
+        {
+            return votes.Where(v => v.IsUpVote == true).Count()
+                - votes.Where(v => v.IsUpVote == false).Count();
+        }
         [HttpGet]
         public async Task<IEnumerable<PostInfo>> GetPosts([FromHeader] int postAmount = -1)
         {
             PostService postService = new PostService();
             List<Post> posts = await postService.GetPosts(_context);
             var postInfos = mapper.Map<List<PostInfo>>(posts);
+            
             if (postAmount < 0)
                 return postInfos;
 

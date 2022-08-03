@@ -27,9 +27,12 @@ namespace API.Controllers
         private readonly MapperConfiguration config = new MapperConfiguration(cfg => {
             cfg.CreateMap<User, UserInfo>();
             cfg.CreateMap<User, UserPostsCommentsInfo>();
-            cfg.CreateMap<Post, PostInfo>();
-            cfg.CreateMap<Comment, CommentInfo>();
+            cfg.CreateMap<Post, PostInfo>().ForMember(
+                dest => dest.Votes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
+            cfg.CreateMap<Comment, CommentInfo>().ForMember(
+                dest => dest.Votes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
             cfg.CreateMap<UserCode, User>();
+            cfg.CreateMap<VoteRequest, Vote>();
         });
         private readonly Mapper mapper;
         public UserController(SiteDbContext context, IConfiguration configuration)
@@ -38,6 +41,11 @@ namespace API.Controllers
             mapper = new Mapper(config);
             _configuration = configuration;
 
+        }
+        private static int CalculateVotes(List<Vote> votes)
+        {
+            return votes.Where(v => v.IsUpVote == true).Count()
+                - votes.Where(v => v.IsUpVote == false).Count();
         }
 
         [HttpGet]
@@ -341,27 +349,93 @@ namespace API.Controllers
             }
             return new UserToken();
         }
-        //[HttpPost("vote")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        //public async Task<ActionResult> Vote([FromBody] VoteRequest voteRequest)
-        //{
+        [HttpPost("vote")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> Vote([FromBody] VoteRequest voteRequest)
+        {
 
-        //    ///de verificat toate cazurile
-        //    VoteService voteService = new VoteService();
-        //    UserService userService = new UserService();
-        //    if (voteRequest == null || voteRequest.UserId == null) return BadRequest();
-        //    var user = await userService.GetUserById(_context, voteRequest.UserId);
-        //    var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
-        //    if (user != null && userclaim != null && user.UserName != null &&
-        //        !user.UserName.Equals(userclaim.Value)) return Unauthorized(); 
-        //    if (voteRequest.PostId != null && voteRequest.CommentId == null)
-        //    {
-        //        var vote = await voteService.GetVoteByUserAndPostId(_context, voteRequest.UserId, voteRequest.PostId);
-        //        if(vote != null)
-        //        {
+            ///de verificat toate cazurile
+            VoteService voteService = new VoteService();
+            UserService userService = new UserService();
+            Vote? vote = new Vote();
+            DbCodes.Codes codeResult = new DbCodes.Codes();
+            if (voteRequest == null) return BadRequest();
+            var userclaim = User.Claims.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name));
+            if (userclaim == null) return Unauthorized();
+            if(voteRequest.UserId == null)
+            {
+                //var user =await userService.GetUserByUsername(_context, userclaim.Value);
+                //if (user != null)
+                //{
+                //    voteRequest.UserId = user.Id;
+                //    vote = mapper.Map<Vote>(voteRequest);
+                //    codeResult = await voteService.CreateVote(_context, vote);
+                //}
+                return Unauthorized();
+            }
+            else
+            {
+                var user = await userService.GetUserById(_context, voteRequest.UserId);
+                if(user != null)
+                {
+                    if (!userclaim.Value.Equals(user.UserName))
+                    {
+                        return BadRequest();
+                    }
+                    if (voteRequest.PostId != null && voteRequest.CommentId == null)
+                    {
+                        vote = await voteService.GetVoteByUserAndPostId(_context, voteRequest.UserId, voteRequest.PostId);
+                        if (vote != null)
+                        {
+                            if (vote.IsUpVote == voteRequest.IsUpVote)
+                            {
+                                codeResult = await voteService.DeleteVote(_context, vote);
+                            }
+                            else
+                            {
+                                vote.IsUpVote = voteRequest.IsUpVote;
+                                codeResult = await voteService.UpdateVote(_context, vote);
+                            }
 
-        //        }
-        //    }
-        //}
+                        }
+                        else
+                        {
+                            vote = mapper.Map<Vote>(voteRequest);
+                            codeResult = await voteService.CreateVote(_context, vote);
+                        }
+                    }
+                    else
+                    if (voteRequest.PostId == null && voteRequest.CommentId != null)
+                    {
+                        vote = await voteService.GetVoteByUserAndCommentId(_context, voteRequest.UserId, voteRequest.CommentId);
+                        if (vote != null)
+                        {
+                            if (vote.IsUpVote == voteRequest.IsUpVote)
+                            {
+                                codeResult = await voteService.DeleteVote(_context, vote);
+                            }
+                            else
+                            {
+                                vote.IsUpVote = voteRequest.IsUpVote;
+                                codeResult = await voteService.UpdateVote(_context, vote);
+                            }
+
+                        }
+                        else
+                        {
+                            vote = mapper.Map<Vote>(voteRequest);
+                            codeResult = await voteService.CreateVote(_context, vote);
+                        }
+                    }
+                    else return BadRequest();
+                }
+            }
+            if (codeResult == DbCodes.Codes.Succes)
+            {
+                return Ok();
+            }
+            else return UnprocessableEntity();
+            
+        }
     }
 }

@@ -21,9 +21,15 @@ namespace API.Controllers
             cfg.CreateMap<User, UserInfo>();
             cfg.CreateMap<User, UserPostsCommentsInfo>();
             cfg.CreateMap<Post, PostInfo>();
-            cfg.CreateMap<Comment, CommentInfo>();
+            cfg.CreateMap<Comment, CommentInfo>().ForMember(
+                dest => dest.Votes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
             cfg.CreateMap<UserCode, User>();
         });
+        private static int CalculateVotes(List<Vote> votes)
+        {
+            return votes.Where(v => v.IsUpVote == true).Count()
+                - votes.Where(v => v.IsUpVote == false).Count();
+        }
         private readonly Mapper mapper;
         public CommentController(SiteDbContext context)
         {

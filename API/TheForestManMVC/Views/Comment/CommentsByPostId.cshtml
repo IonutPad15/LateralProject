@@ -13,8 +13,41 @@
 <h4>PostInfo</h4>
 <hr />
 <dl class="row">
-        <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Author)
+        
+    <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.Votes)
+    </dt>
+    <dd class = "col-sm-10">
+        <dl class="row">
+        <form asp-controller="User" asp-action="UpVote">
+                                    
+                <div class="form-group">
+                    <input class="form-control" name="postId" value=@Model.Id hidden />
+                    <input class="form-control" name="verif" value=true hidden />
+                </div>
+                <div class="form-group">
+                    <input type ="submit" class="btn-outline-primary" value= &#8679;
+                        style="font-size:22px"  >
+                </div>
+            </form>
+                    <div>
+                        @Html.DisplayFor(modelItem=> @Model.Votes)
+                    </div>
+            <form asp-controller="User" asp-action="DownVote">
+                                    
+                <div class="form-group">
+                    <input class="form-control" name="postId" value=@Model.Id hidden />
+                    <input class="form-control" name="verif" value=true hidden />
+                </div>
+                <div class="form-group">
+                    <input type ="submit" class="btn-outline-danger" value= &#8681;
+                        style="font-size:22px"   >
+                </div>
+            </form>
+            </dl>
+    </dd>
+    <dt class = "col-sm-2">
+    @Html.DisplayNameFor(model => model.Author)
     </dt>
     <dd class = "col-sm-10">
         @if(!Model.Author.Equals("[User Deleted]"))
@@ -100,6 +133,9 @@
 </dl>
 <table class="table">
     <tr>
+        <th>
+            @Html.DisplayNameFor(model=>model.Comments[0].Votes)
+        </th>
         <th>
             @Html.DisplayNameFor(model => model.Comments[0].Author)
         </th>
