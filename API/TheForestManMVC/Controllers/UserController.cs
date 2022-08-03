@@ -389,7 +389,7 @@ namespace TheForestManMVC.Controllers
                 
             }
         }
-        public async Task<ActionResult> UpVote(Guid postId, Guid commentId, bool verif, Guid userId)
+        public async Task<ActionResult> UpVote(Guid? postId, Guid? commentId, bool verif, Guid? userId)
         {
             using (HttpClient client = new HttpClient())
             {
@@ -404,21 +404,52 @@ namespace TheForestManMVC.Controllers
                         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
                             responseToken.Token);
-                        VoteRequest voteRequest = new VoteRequest()
+                        if (postId != null && commentId == null)
                         {
-                            PostId = postId,
-                            UserId = responseToken.UserId,
-                            IsUpVote = true
-                        };
-                        var request = await client.PostAsJsonAsync($"{HomeController.url}/user/vote", voteRequest);
-                        if (request.IsSuccessStatusCode)
-                        {
-                            return Content("a mers");
+                            VoteRequest voteRequest = new VoteRequest()
+                            {
+                                PostId = postId,
+                                UserId = responseToken.UserId,
+                                IsUpVote = true
+                            };
+                            var request = await client.PostAsJsonAsync($"{HomeController.url}/user/vote", voteRequest);
+
+                            if (verif == false)
+                            {
+                                if (userId != null)
+                                {
+                                    return RedirectToAction("AboutUser", new { @id = userId });
+                                }
+                                return RedirectToAction("Index", "Home");
+                            }
+                            else
+                            {
+                                //return RedirectToAction("AboutUser", new RouteValueDictionary(
+                                //        new { controller = "User", action = "AboutUser", Id = userId }));
+                                return RedirectToAction("CommentsByPostId", "Comment", new { @id = postId });
+                            }
                         }
-                        return Content("nu a mers");
+                        if (commentId != null )
+                        {
+                            VoteRequest voteRequest = new VoteRequest()
+                            {
+                                CommentId = commentId,
+                                UserId = responseToken.UserId,
+                                IsUpVote = true
+                            };
+                            var request = await client.PostAsJsonAsync($"{HomeController.url}/user/vote", voteRequest);
+                            if (userId != null)
+                            {
+                                return RedirectToAction("AboutUser", new { @id = userId });
+                            }
+                            if(postId != null)
+                            return RedirectToAction("CommentsByPostId", "Comment", new { @id = postId });
+                        }
+
+
                     }
                 }
-                return Content("nu esti logat");
+                return Content("nu merge");
 
             }
         }
@@ -438,7 +469,7 @@ namespace TheForestManMVC.Controllers
                         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer",
                             responseToken.Token);
-                        if (postId != null)
+                        if (postId != null && commentId == null)
                         {
                             VoteRequest voteRequest = new VoteRequest()
                             {
@@ -463,7 +494,7 @@ namespace TheForestManMVC.Controllers
                                 return RedirectToAction("CommentsByPostId","Comment", new { @id = postId });
                             }
                         }
-                        if(commentId != null)
+                        if (commentId != null)
                         {
                             VoteRequest voteRequest = new VoteRequest()
                             {
@@ -472,15 +503,14 @@ namespace TheForestManMVC.Controllers
                                 IsUpVote = false
                             };
                             var request = await client.PostAsJsonAsync($"{HomeController.url}/user/vote", voteRequest);
-
-                            if (verif == false)
-                                return RedirectToAction("Index", "Home");
-                            else
-                                //return RedirectToAction("AboutUser", new RouteValueDictionary(
-                                //        new { controller = "User", action = "AboutUser", Id = userId }));
+                            if (userId != null)
+                            {
                                 return RedirectToAction("AboutUser", new { @id = userId });
+                            }
+                            if (postId != null)
+                                return RedirectToAction("CommentsByPostId", "Comment", new { @id = postId });
                         }
-                        
+
 
                     }
                 }
