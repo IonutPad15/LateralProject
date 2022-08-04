@@ -1,26 +1,24 @@
 
 
 using API.Utils;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.InMemory;
 
 namespace UnitTestForAPI
 {
     [TestClass]
-    public class UnitTest1
+    public class UserServiceTest
     {
         private readonly string url = "https://localhost:7083/api";
         private readonly SiteDbContext _context;
-        private SqliteConnection _connection;
-        private DbContextOptionsBuilder _contextOptions;
         DbContextOptions<SiteDbContext> options = new DbContextOptionsBuilder<SiteDbContext>()
           .UseInMemoryDatabase(databaseName: "SiteDataBase")
           .Options;
         HashHelper hashHelper = new HashHelper();
         UserService userService = new UserService();
         
-        public UnitTest1()
+        public TestContext TestContext { get; set; }
+
+        public UserServiceTest()
         {
             _context = new SiteDbContext(options);
             string hashedpass = hashHelper.GetHash("12345678");
@@ -37,24 +35,19 @@ namespace UnitTestForAPI
 
         }
         [TestMethod]
-        public async Task TestCreateUser()
+        public async void TestCreateUserSucces()
         {
-            string hashedpass = hashHelper.GetHash("12345678");
-            User user = new User()
-            {
-                UserName = "Ionut",
-                Email = "ionut@gmail.com",
-                Password = hashedpass
-            };
-            var codeResult = await userService.CreateUser(_context, user);
+            Assert.Inconclusive();
         }
         [TestMethod]
-        public async Task TestGetUsers()
+        public async void TestCreateUserError()
         {
-            
-            
-
-            List<UserInfo> userInfos = await userService.GetUsers(_context);
+            Assert.Inconclusive();
+        }
+        [TestMethod]
+        public async void TestGetUsers()
+        {
+            Assert.Inconclusive();
         }
     }
 }

@@ -87,23 +87,44 @@
                                         </div>
                                     </form>
                             }
+                            else
+                            {
+                                <form asp-controller="User" asp-action="Login">
+
+                                <div class="form-group">
+                                     <input class="form-control" name="message" value="You must be logged in to vote" hidden />
+                                    <input type ="submit" class="btn-outline-primary" value= &#8679;
+                                        style="font-size:22px"  >
+                                </div>
+                                </form>
+                            }
                                 <div>
                                     @Html.DisplayFor(modelItem=> @item.Votes)
                                 </div>
                             if (token != null)
                             {
-                                    <form asp-controller="User" asp-action="DownVote">
+                                <form asp-controller="User" asp-action="DownVote">
 
-                                        <div class="form-group">
-                                            <input class="form-control" name="postId" value=@item.Id hidden />
-                                            <input class="form-control" name="verif" value=false hidden />
-                                            <input class="form-control" name="userId" value=@Model.Id hidden />
-                                        </div>
-                                        <div class="form-group">
-                                            <input type ="submit" class="btn-outline-danger" value= &#8681;
-                                        style="font-size:22px"   >
-                                        </div>
-                                    </form>
+                                    <div class="form-group">
+                                        <input class="form-control" name="postId" value=@item.Id hidden />
+                                        <input class="form-control" name="verif" value=false hidden />
+                                        <input class="form-control" name="userId" value=@Model.Id hidden />
+                                    </div>
+                                    <div class="form-group">
+                                        <input type ="submit" class="btn-outline-danger" value= &#8681;
+                                    style="font-size:22px"   >
+                                    </div>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-controller="User" asp-action="LogIn">
+                                    <div class="form-group">
+                                        <input class="form-control" name="message" value="You must be logged in to vote" hidden />
+                                        <input type ="submit" class="btn-outline-danger" value= &#8681;
+                                            style="font-size:22px"   >
+                                    </div>
+                                </form>
                             }
                         }
                     </div>
@@ -126,18 +147,18 @@
                 <td>
                     @{
                         token = Context.Request.Cookies["token3"];
-                                    @if(token != null)
+                        @if(token != null)
                         {
                         
                             var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
                             var responseToken = JsonSerializer.Deserialize<UserToken>(
                                 token, jsonSerializerOptions);
-                                            @if (responseToken!= null &&  responseToken.UserId == Model.Id)
+                            @if (responseToken!= null &&  responseToken.UserId == Model.Id)
                             {
-                                                <div>
-                                                    @Html.ActionLink("Edit", "Edit","Home", new { @id = @item.Id,@body=@item.Description}) |
-                                                    @Html.ActionLink("Delete", "Delete","Home", new { @id = @item.Id,@body= @item.Description })
-                                                </div>
+                                <div>
+                                    @Html.ActionLink("Edit", "Edit","Home", new { @id = @item.Id,@body=@item.Description}) |
+                                    @Html.ActionLink("Delete", "Delete","Home", new { @id = @item.Id,@body= @item.Description })
+                                </div>
                             }
                         }
                     }
@@ -186,6 +207,17 @@
                                 </div>
                             </form>
                         }
+                        else
+                        {
+                                <form asp-controller="User" asp-action="Login">
+
+                                <div class="form-group">
+                                     <input class="form-control" name="message" value="You must be logged in to vote" hidden />
+                                    <input type ="submit" class="btn-outline-primary" value= &#8679;
+                                        style="font-size:22px"  >
+                                </div>
+                                </form>
+                        }
 
                         <div>
                             @Html.DisplayFor(modelItem=> @Model.Comments[i].Votes)
@@ -203,6 +235,17 @@
                                     <input type ="submit" class="btn-outline-danger" value= &#8681;
                                     style="font-size:22px"   >
                                 </div>
+                            </form>
+                        }
+                        else
+                         {
+                            <form asp-controller="User" asp-action="LogIn">
+                                <div class="form-group">
+                                    <input class="form-control" name="message" value="You must be logged in to vote" hidden />
+                                    <input type ="submit" class="btn-outline-danger" value= &#8681;
+                                        style="font-size:22px"   >
+                                </div>
+
                             </form>
                         }
                     }

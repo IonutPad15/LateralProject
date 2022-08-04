@@ -21,23 +21,34 @@
         <dl class="row">
             @{
                 var token = Context.Request.Cookies["token3"];
-                    @if(token != null)
+                @if(token != null)
                 {
-                        <form asp-controller="User" asp-action="UpVote">
-                            <div class="form-group">
-                                <input class="form-control" name="postId" value=@Model.Id hidden />
-                                <input class="form-control" name="verif" value=true hidden />
-                            </div>
-                            <div class="form-group">
-                                <input type ="submit" class="btn-outline-primary" value= &#8679;
-                                    style="font-size:22px"  >
-                            </div>
-                        </form>
-                }
-                    <div>
-                            @Html.DisplayFor(modelItem=> @Model.Votes)
+                    <form asp-controller="User" asp-action="UpVote">
+                        <div class="form-group">
+                            <input class="form-control" name="postId" value=@Model.Id hidden />
+                            <input class="form-control" name="verif" value=true hidden />
                         </div>
-                    @if (token != null)
+                        <div class="form-group">
+                            <input type ="submit" class="btn-outline-primary" value= &#8679;
+                                style="font-size:22px"  >
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <form asp-controller="User" asp-action="Login">
+
+                    <div class="form-group">
+                            <input class="form-control" name="message" value="You must be logged in to vote" hidden />
+                        <input type ="submit" class="btn-outline-primary" value= &#8679;
+                            style="font-size:22px"  >
+                    </div>
+                    </form>
+                }
+                <div>
+                        @Html.DisplayFor(modelItem=> @Model.Votes)
+                </div>
+                @if (token != null)
                 {
                     <form asp-controller="User" asp-action="DownVote">
                         <div class="form-group">
@@ -48,6 +59,17 @@
                             <input type ="submit" class="btn-outline-danger" value= &#8681;
                                 style="font-size:22px"   >
                         </div>
+                    </form>
+                }
+                 else
+                 {
+                    <form asp-controller="User" asp-action="LogIn">
+                        <div class="form-group">
+                            <input class="form-control" name="message" value="You must be logged in to vote" hidden />
+                            <input type ="submit" class="btn-outline-danger" value= &#8681;
+                                style="font-size:22px"   >
+                        </div>
+
                     </form>
                 }
             }
@@ -101,17 +123,17 @@
             <div class="col-md-4">
                 @{
                     token = Context.Request.Cookies["token3"];
-                        @if (token != null && Model.UserId != null)
+                                @if (token != null && Model.UserId != null)
                     {
                         var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
                         var responseToken = JsonSerializer.Deserialize<UserToken>(
                             token, jsonSerializerOptions);
-                            @if (responseToken != null && responseToken.UserId == Model.UserId)
+                                    @if (responseToken != null && responseToken.UserId == Model.UserId)
                         {
-                            <div>
-                                @Html.ActionLink("Edit", "Edit","Home", new { @id = Model.Id,@body=Model.Description}) |
-                                @Html.ActionLink("Delete", "Delete","Home", new { @id = Model.Id,@body= Model.Description })
-                            </div>
+                                    <div>
+                                        @Html.ActionLink("Edit", "Edit","Home", new { @id = Model.Id,@body=Model.Description}) |
+                                        @Html.ActionLink("Delete", "Delete","Home", new { @id = Model.Id,@body= Model.Description })
+                                    </div>
                         }
                     }
                 }
@@ -170,37 +192,59 @@
                     token = Context.Request.Cookies["token3"];
                     if (token != null)
                     {
-                    <form asp-controller="User" asp-action="UpVote">
+                        <form asp-controller="User" asp-action="UpVote">
+
+                            <div class="form-group">
+                                <input class="form-control" name="commentId" value=@Model.Comments[i].Id hidden />
+                                <input class="form-control" name="postId" value=@Model.Id hidden />
+                                <input class="form-control" name="verif" value=true hidden />
+                            </div>
+                            <div class="form-group">
+                                <input type ="submit" class="btn-outline-primary" value= &#8679;
+                                    style="font-size:22px"  >
+                            </div>
+                         </form>
+                    }
+                    else
+                    {
+                        <form asp-controller="User" asp-action="Login">
 
                         <div class="form-group">
-                            <input class="form-control" name="commentId" value=@Model.Comments[i].Id hidden />
-                            <input class="form-control" name="postId" value=@Model.Id hidden />
-                            <input class="form-control" name="verif" value=true hidden />
-                        </div>
-                        <div class="form-group">
+                                <input class="form-control" name="message" value="You must be logged in to vote" hidden />
                             <input type ="submit" class="btn-outline-primary" value= &#8679;
                                 style="font-size:22px"  >
                         </div>
-                    </form>
+                        </form>
                     }
-                    <div>
-                        @Html.DisplayFor(modelItem=> @Model.Comments[i].Votes)
-                    </div>
+                    
+                        <div>
+                            @Html.DisplayFor(modelItem=> @Model.Comments[i].Votes)
+                        </div>
                     if (token != null)
                     {
                         <form asp-controller="User" asp-action="DownVote">
 
-                        <div class="form-group">
-                            <input class="form-control" name="commentId" value=@Model.Comments[i].Id hidden />
-                            <input class="form-control" name="postId" value=@Model.Id hidden />
-                            <input class="form-control" name="verif" value=true hidden />
-                        </div>
-                        <div class="form-group">
-                            <input type ="submit" class="btn-outline-danger" value= &#8681;
-                                style="font-size:22px"   >
-                        </div>
+                            <div class="form-group">
+                                <input class="form-control" name="commentId" value=@Model.Comments[i].Id hidden />
+                                <input class="form-control" name="postId" value=@Model.Id hidden />
+                                <input class="form-control" name="verif" value=true hidden />
+                            </div>
+                            <div class="form-group">
+                                <input type ="submit" class="btn-outline-danger" value= &#8681;
+                                    style="font-size:22px"   >
+                            </div>
 
-                    </form>
+                        </form>
+                    }
+                    else{
+                            <form asp-controller="User" asp-action="LogIn">
+                            <div class="form-group">
+                                <input class="form-control" name="message" value="You must be logged in to vote" hidden />
+                                <input type ="submit" class="btn-outline-danger" value= &#8681;
+                                    style="font-size:22px"   >
+                            </div>
+
+                        </form>
                     }
             }
             </td>
@@ -229,17 +273,17 @@
                 
             @{
                 token = Context.Request.Cookies["token3"];
-                    @if(token!=null && Model.Comments[i].UserId!=null)
+                            @if(token!=null && Model.Comments[i].UserId!=null)
                 {
                     var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
                     var responseToken = JsonSerializer.Deserialize<UserToken>(
                         token, jsonSerializerOptions);
-                        @if(responseToken != null && responseToken.UserId == Model.Comments[i].UserId)
+                                @if(responseToken != null && responseToken.UserId == Model.Comments[i].UserId)
                     {
-                            <div>
-                            @Html.ActionLink("Edit", "Edit", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].CommentBody,@postId=@Model.Id}) |
-                            @Html.ActionLink("Delete", "Delete", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].CommentBody })
-                            </div>
+                                    <div>
+                                    @Html.ActionLink("Edit", "Edit", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].CommentBody,@postId=@Model.Id}) |
+                                    @Html.ActionLink("Delete", "Delete", new { @id = Model.Comments[i].Id,@body= Model.Comments[i].CommentBody })
+                                    </div>
                     }
                 }
             }

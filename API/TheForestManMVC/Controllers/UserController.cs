@@ -210,9 +210,10 @@ namespace TheForestManMVC.Controllers
                 return Content("nu merge...");
             }
         }
-        public ActionResult LogIn()
+        public ActionResult LogIn(string? message)
         {
-            
+            if (message != null)
+                ViewBag.ErrorUser = message;
             return View();
         }
         public ActionResult LogOut()

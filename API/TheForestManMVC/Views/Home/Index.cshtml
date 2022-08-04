@@ -68,8 +68,19 @@
                     </div>
                 </form>
             }
+            else
+            {
+                <form asp-controller="User" asp-action="Login">
+
+                <div class="form-group">
+                        <input class="form-control" name="message" value="You must be logged in to vote" hidden />
+                    <input type ="submit" class="btn-outline-primary" value= &#8679;
+                        style="font-size:22px"  >
+                </div>
+                </form>
+            }
             <div>
-                                    @Html.DisplayFor(modelItem=> @item.Votes)
+                @Html.DisplayFor(modelItem=> @item.Votes)
             </div>
             if (token != null)
             {
@@ -82,6 +93,17 @@
                         <input type ="submit" class="btn-outline-danger" value= &#8681;
                                     style="font-size:22px"   >
                     </div>
+                </form>
+            }
+             else
+             {
+                <form asp-controller="User" asp-action="LogIn">
+                    <div class="form-group">
+                        <input class="form-control" name="message" value="You must be logged in to vote" hidden />
+                        <input type ="submit" class="btn-outline-danger" value= &#8681;
+                            style="font-size:22px"   >
+                    </div>
+
                 </form>
             }
         }
