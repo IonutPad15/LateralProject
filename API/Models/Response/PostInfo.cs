@@ -11,6 +11,7 @@ namespace Models.Response
         public PostInfo()
         {
             Comments = new List<CommentInfo>();
+            Votes = new List<VoteInfo>();
         }
         public Guid Id { get; set; }
         public string Title { get; set; }
@@ -20,7 +21,8 @@ namespace Models.Response
         public DateTime Updated { get; set; }
         public Guid? UserId { get; set; }
         public List<CommentInfo> Comments { get; set; }
-        public int Votes { get; set; }
+        public int NrOfVotes { get; set; }
+        public List<VoteInfo> Votes { get; set; }
         override
         public string ToString()
         {

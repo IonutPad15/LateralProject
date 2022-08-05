@@ -55,6 +55,7 @@
     <Compile Include="Response\UserInfo.cs" />
     <Compile Include="Response\UserPostsCommentsInfo.cs" />
     <Compile Include="Response\UserToken.cs" />
+    <Compile Include="Response\VoteInfo.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

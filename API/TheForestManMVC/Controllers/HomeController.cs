@@ -37,7 +37,7 @@ namespace TheForestManMVC.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            List<PostInfo> postsInfo = await GetAllPosts();
+            List<PostInfo> postsInfo = await GetAllPosts();            
             return View(postsInfo);
         }
         [HttpPost]

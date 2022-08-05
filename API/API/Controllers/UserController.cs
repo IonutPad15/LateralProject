@@ -28,11 +28,16 @@ namespace API.Controllers
             cfg.CreateMap<User, UserInfo>();
             cfg.CreateMap<User, UserPostsCommentsInfo>();
             cfg.CreateMap<Post, PostInfo>().ForMember(
-                dest => dest.Votes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
+                dest => dest.NrOfVotes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)))
+            .ForMember(
+                dest => dest.Votes, opt => opt.MapFrom(src => src.Votes));
             cfg.CreateMap<Comment, CommentInfo>().ForMember(
-                dest => dest.Votes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
+                dest => dest.NrOfVotes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)))
+            .ForMember(
+                dest => dest.Votes, opt => opt.MapFrom(src => src.Votes));
             cfg.CreateMap<UserCode, User>();
             cfg.CreateMap<VoteRequest, Vote>();
+            cfg.CreateMap<Vote, VoteInfo>();
         });
         private readonly Mapper mapper;
         public UserController(SiteDbContext context, IConfiguration configuration)

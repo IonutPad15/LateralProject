@@ -22,9 +22,12 @@ namespace API.Controllers
             cfg.CreateMap<User, UserInfo>();
             cfg.CreateMap<User, UserPostsCommentsInfo>();
             cfg.CreateMap<Post, PostInfo>().ForMember(
-                dest => dest.Votes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
+                dest => dest.NrOfVotes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
+            cfg.CreateMap<Vote, VoteInfo>();
             cfg.CreateMap<Comment, CommentInfo>().ForMember(
-                dest => dest.Votes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
+                dest => dest.NrOfVotes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)))
+            .ForMember(
+                dest =>dest.Votes, opt => opt.MapFrom(src=>src.Votes));
             cfg.CreateMap<UserCode, User>();
         });
         private readonly Mapper mapper;
@@ -39,17 +42,22 @@ namespace API.Controllers
                 - votes.Where(v => v.IsUpVote == false).Count();
         }
         [HttpGet]
-        public async Task<IEnumerable<PostInfo>> GetPosts([FromHeader] int postAmount = -1)
+        public async Task<IActionResult> GetPosts( int postAmount = -1)
         {
             PostService postService = new PostService();
             List<Post> posts = await postService.GetPosts(_context);
             var postInfos = mapper.Map<List<PostInfo>>(posts);
-            
+            //var postInfos = posts.Select(p =>
+            //{
+            //    var post = mapper.Map<PostInfo>(p);
+            //    post.Votes = p.Votes.Select(v => mapper.Map<VoteInfo>(v)).ToList();
+            //    return post;
+            //    });
             if (postAmount < 0)
-                return postInfos;
+                return Ok(postInfos);
 
-            List<PostInfo> nextposts = postInfos.Skip(Math.Max(0, postInfos.Count - postAmount)).ToList();
-            return nextposts;
+            List<PostInfo> nextposts = postInfos.Skip(Math.Max(0, postAmount)).ToList();
+            return Ok(nextposts);
         }
 
         [HttpGet("{id}")]

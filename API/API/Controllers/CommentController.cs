@@ -22,8 +22,11 @@ namespace API.Controllers
             cfg.CreateMap<User, UserPostsCommentsInfo>();
             cfg.CreateMap<Post, PostInfo>();
             cfg.CreateMap<Comment, CommentInfo>().ForMember(
-                dest => dest.Votes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)));
+                dest => dest.NrOfVotes, opt => opt.MapFrom(src => CalculateVotes(src.Votes)))
+            .ForMember(
+                dest => dest.Votes, opt => opt.MapFrom(src => src.Votes));
             cfg.CreateMap<UserCode, User>();
+            cfg.CreateMap<Vote, VoteInfo>();
         });
         private static int CalculateVotes(List<Vote> votes)
         {

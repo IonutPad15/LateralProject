@@ -80,7 +80,35 @@
                 </form>
             }
             <div>
-                @Html.DisplayFor(modelItem=> @item.Votes)
+                @if(token != null)
+                {
+                    var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var responseToken = JsonSerializer.Deserialize<UserToken>(
+                        token, jsonSerializerOptions);
+                    
+                    if(responseToken!= null)
+                    {
+                        var vote = @item.Votes.FirstOrDefault(v => v.UserId == responseToken.UserId);
+                        if (vote!= null && vote.IsUpVote == false)
+                        {
+                            <label for="@item.NrOfVotes"><font color="red">@item.NrOfVotes  </font></label>
+                        }
+                        else if (vote!= null && vote.IsUpVote == true)
+                        {
+                            <label for="@item.NrOfVotes"><font color="blue">@item.NrOfVotes  </font></label>
+                        }
+                        else
+                        {
+                            <label for="@item.NrOfVotes"><font color="black">@item.NrOfVotes  </font></label>
+                        }
+                    }
+                    
+                }
+                else
+                {
+                    <label for="@item.NrOfVotes"><font color="black">@item.NrOfVotes  </font></label>
+                }
+                
             </div>
             if (token != null)
             {

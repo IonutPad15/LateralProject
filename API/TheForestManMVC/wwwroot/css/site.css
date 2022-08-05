@@ -16,3 +16,9 @@ html {
 body {
   margin-bottom: 60px;
 }
+div.RedText{
+    color:red
+}
+div.BlueText{
+    color:blue
+}

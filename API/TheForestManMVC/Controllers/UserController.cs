@@ -478,8 +478,7 @@ namespace TheForestManMVC.Controllers
                                 UserId = responseToken.UserId,
                                 IsUpVote = false
                             };
-                            var request = await client.PostAsJsonAsync($"{HomeController.url}/user/vote", voteRequest);
-
+                            var request = await client.PostAsJsonAsync($"{HomeController.url}/user/vote", voteRequest);                            
                             if (verif == false)
                             {
                                 if (userId != null)
